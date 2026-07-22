@@ -1,0 +1,106 @@
+// MapLibre GL setup. A SINGLE source holds every line's every segment
+// (no per-mode/per-line sources needed - answers "do we really need 5
+// sources" - no); per-mode visual differentiation (width, z-order) comes
+// from multiple LAYERS reading that one source, each filtered by the
+// `mode` property. Explored state uses feature-state exactly like the
+// street prototype's setFeatureState/generateId pattern.
+
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { MAP_CENTER, MAP_ZOOM, MAP_STYLE_URL, MODE_ORDER, MODE_WIDTH } from './config.js';
+
+const SEGMENTS_SOURCE_ID = 'transit-segments';
+const TRACK_SOURCE_ID = 'raw-track';
+const TRACK_LAYER_ID = 'raw-track-layer';
+const BOUNDARY_SOURCE_ID = 'boundary';
+const BOUNDARY_LAYER_ID = 'boundary-layer';
+
+export function createMap() {
+  return new maplibregl.Map({
+    container: 'map',
+    style: MAP_STYLE_URL,
+    center: MAP_CENTER,
+    zoom: MAP_ZOOM,
+  });
+}
+
+export function addSegmentsLayers(map, segmentsGeoJSON) {
+  map.addSource(SEGMENTS_SOURCE_ID, {
+    type: 'geojson',
+    data: segmentsGeoJSON,
+    generateId: true,
+  });
+
+  // Layer add order = MODE_ORDER (last added draws on top). One layer per
+  // mode, each filtered to only that mode's features from the single
+  // shared source.
+  for (const mode of MODE_ORDER) {
+    const width = MODE_WIDTH[mode] || { explored: 3, unexplored: 1.5 };
+    map.addLayer({
+      id: `segments-${mode}`,
+      type: 'line',
+      source: SEGMENTS_SOURCE_ID,
+      filter: ['==', ['get', 'mode'], mode],
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': [
+          'case',
+          ['boolean', ['feature-state', 'explored'], false],
+          ['get', 'routeColor'],
+          '#8a8f98', // unexplored - uniform grey regardless of line, matches street prototype
+        ],
+        'line-width': [
+          'case',
+          ['boolean', ['feature-state', 'explored'], false],
+          width.explored,
+          width.unexplored,
+        ],
+        'line-opacity': [
+          'case',
+          ['boolean', ['feature-state', 'explored'], false],
+          0.95,
+          0.4,
+        ],
+      },
+    });
+  }
+
+  // Debug layer: raw recorded GPS trail of the current/last ride.
+  map.addSource(TRACK_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({
+    id: TRACK_LAYER_ID,
+    type: 'line',
+    source: TRACK_SOURCE_ID,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#ff5da2', 'line-width': 2, 'line-opacity': 0.6, 'line-dasharray': [1, 2] },
+  });
+}
+
+export function addBoundaryLayer(map, boundaryGeoJSON) {
+  map.addSource(BOUNDARY_SOURCE_ID, { type: 'geojson', data: boundaryGeoJSON });
+  map.addLayer({
+    id: BOUNDARY_LAYER_ID,
+    type: 'line',
+    source: BOUNDARY_SOURCE_ID,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#3b82f6', 'line-width': 3, 'line-opacity': 0.9 },
+  });
+}
+
+export function setSegmentExplored(map, index) {
+  map.setFeatureState({ source: SEGMENTS_SOURCE_ID, id: index }, { explored: true });
+}
+
+export function updateRawTrack(map, trackPoints) {
+  const source = map.getSource(TRACK_SOURCE_ID);
+  if (!source) return;
+  if (trackPoints.length < 2) {
+    source.setData({ type: 'FeatureCollection', features: [] });
+    return;
+  }
+  source.setData({
+    type: 'Feature',
+    properties: {},
+    geometry: { type: 'LineString', coordinates: trackPoints.map((p) => [p.lon, p.lat]) },
+  });
+}

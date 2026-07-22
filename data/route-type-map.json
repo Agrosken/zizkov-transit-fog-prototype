@@ -1,0 +1,15 @@
+{
+  "_comment": "GTFS route_type -> mode, verified directly against Prague PID's real feed (data.pid.cz/PID_GTFS.zip) on 2026-07-22. Standard GTFS base codes (0/1/2/3/4) plus one extended code (11) for trolleybus. Do not assume these values for other cities/feeds without re-verifying.",
+  "0": "tram",
+  "1": "metro",
+  "2": "train",
+  "3": "bus",
+  "4": "ferry",
+  "11": "trolleybus",
+  "_ae_exclusion": {
+    "comment": "Airport Express line, explicitly excluded from this app per product requirement. Confirmed both fields for belt-and-suspenders filtering.",
+    "route_id": "L290",
+    "route_short_name": "AE"
+  },
+  "_shape_dist_traveled_units": "kilometers (confirmed from real data - stop-to-stop values on a metro trip were in the 0-4.4 range over a few stations, consistent with km-scale station spacing, not meters)"
+}
