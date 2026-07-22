@@ -224,13 +224,20 @@ for (const group of legGroups.values()) {
 
   // 2+ legs sharing this stop-pair (normally exactly 2, one per direction).
   // Pairwise-check; merge any that match, keep the rest separate.
+  //
+  // Metro is always force-merged, skipping the geometric same-path check:
+  // both directions run in the same tunnel, there's nothing to see or
+  // explore differently between them (no "different street" the way a
+  // surface divided-road split matters), so splitting by direction would
+  // just be pointless complexity - keep it simple, bidirectional always.
+  const isMetro = group[0].mode === 'metro';
   const merged = new Array(group.length).fill(false);
   for (let i = 0; i < group.length; i++) {
     if (merged[i]) continue;
     let mergedWithAny = false;
     for (let j = i + 1; j < group.length; j++) {
       if (merged[j]) continue;
-      if (legsAreSamePhysicalPath(group[i], group[j])) {
+      if (isMetro || legsAreSamePhysicalPath(group[i], group[j])) {
         const segmentId = `S${segmentIdCounter++}`;
         finalSegments.push({
           segmentId,
