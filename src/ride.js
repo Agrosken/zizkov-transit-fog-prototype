@@ -1,11 +1,20 @@
 // Get On / Get Off / Extra("Joker") ride state machine.
 //
-// Normal ride: board at a stop, pick a line serving it, direction is
-// inferred (not asked) from the first couple of GPS fixes, then each
-// stop-to-stop segment credits the moment a fix lands near its
-// destination stop (see matching.js's isNearDestinationStop) - "must
-// actually ride through it" falls out of that rule, not a separate
-// coverage-fraction calculation.
+// Normal ride: board at a stop, pick a line serving it. Direction is never
+// guessed from movement bearing/timing - a line's two directions from the
+// boarding stop lead to two DIFFERENT next stops (they only rejoin the
+// same physical segment further along, on shared/merged bidirectional
+// street segments), and a segment only ever credits when a fix actually
+// lands near its destination stop anyway. So both candidate directions'
+// immediate next-stop are checked in parallel from boarding; whichever one
+// is actually reached first both resolves the direction AND credits that
+// first segment in the same instant - no separate inference/timing/
+// correction logic needed, and no risk of committing to the wrong one,
+// since only the real destination stop's proximity check can ever fire.
+// (An earlier version inferred direction from GPS movement bearing over a
+// timed window, with a 5-minute re-validation/correction safety net - Tom
+// pointed out the whole thing was unnecessary complexity once crediting
+// already only happens on confirmed stop arrival.)
 //
 // Joker ride: no line/stop pre-selection (for a depot move / non-listed
 // special run). On Get Off, the recorded trace is matched post-hoc
@@ -14,17 +23,10 @@
 // in order" rule as a normal ride, so joining a route mid-segment
 // naturally fails to credit that segment - no special-casing needed.
 
-import { filterFix, isNearDestinationStop, distanceToStop, pickLikelyDirection, buildSpatialIndex, scoreSegmentsAgainstTrace } from './matching.js';
-import {
-  MATCH_DISTANCE_M,
-  STOP_ARRIVAL_THRESHOLD_M,
-  MIN_DIRECTION_INFERENCE_FIXES,
-  MIN_DIRECTION_INFERENCE_DURATION_S,
-  DIRECTION_CONFIRMATION_WINDOW_S,
-  DIRECTION_SWITCH_MARGIN_M,
-} from './config.js';
+import { filterFix, isNearDestinationStop, distanceToStop, buildSpatialIndex, scoreSegmentsAgainstTrace } from './matching.js';
+import { MATCH_DISTANCE_M, STOP_ARRIVAL_THRESHOLD_M } from './config.js';
 
-export function createRideController({ lineDirectionsIndex, segmentFeatures, onSegmentCredited, onSegmentUncredited, onStatus }) {
+export function createRideController({ lineDirectionsIndex, segmentFeatures, onSegmentCredited, onStatus }) {
   let activeRide = null;
   let spatialIndex = null; // built lazily, only needed for Joker matching
 
@@ -52,6 +54,11 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       return false;
     }
 
+    // resolvedDirKey stays null while >1 candidate remains possible; each
+    // candidate tracks its own pointer (starting at the boarding stop)
+    // until one of them is actually reached, at which point the others
+    // are simply dropped - see onFix.
+    const resolved = candidates.length === 1;
     activeRide = {
       kind: 'normal',
       routeId,
@@ -60,21 +67,19 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       boardingNodeId,
       boardingStopName,
       startedAt: Date.now(),
-      directionLocked: candidates.length === 1,
-      dirKey: candidates.length === 1 ? candidates[0].dirKey : null,
-      pointer: candidates.length === 1 ? candidates[0].startPointer : null,
-      candidates, // used for inference if more than one
-      inferenceFixes: [],
+      resolvedDirKey: resolved ? candidates[0].dirKey : null,
+      pointer: resolved ? candidates[0].startPointer : null,
+      candidates: resolved ? null : candidates.map((c) => ({ dirKey: c.dirKey, dir: c.dir, pointer: c.startPointer })),
       rawTrack: [],
       fixLog: [],
       lastAcceptedFix: null,
       creditedSegmentIds: [],
     };
 
-    if (activeRide.directionLocked) {
-      onStatus(`Riding ${routeShortName} toward ${lineDirectionsIndex[activeRide.dirKey].orderedStops[activeRide.pointer + 1].name}.`);
+    if (resolved) {
+      onStatus(`Riding ${routeShortName} toward ${lineDirectionsIndex[activeRide.resolvedDirKey].orderedStops[activeRide.pointer + 1].name}.`);
     } else {
-      onStatus(`Riding ${routeShortName} - figuring out direction...`);
+      onStatus(`Riding ${routeShortName} - direction will confirm once the next stop is reached.`);
     }
     return true;
   }
@@ -129,67 +134,37 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
 
     if (activeRide.kind === 'joker') return; // no live crediting for joker rides - handled post-hoc on Get Off
 
-    if (!activeRide.directionLocked) {
-      activeRide.inferenceFixes.push(fix);
-      const elapsedS = (fix.timestamp - activeRide.inferenceFixes[0].timestamp) / 1000;
-      if (activeRide.inferenceFixes.length >= MIN_DIRECTION_INFERENCE_FIXES && elapsedS >= MIN_DIRECTION_INFERENCE_DURATION_S) {
-        const chosenDirKey = pickLikelyDirection(
-          activeRide.inferenceFixes,
-          activeRide.candidates.map((c) => ({ dirKey: c.dirKey, nextStop: c.nextStop })),
-        );
-        const chosen = activeRide.candidates.find((c) => c.dirKey === chosenDirKey);
-        if (chosen) {
-          // This is a FAST ESTIMATE, not a final answer - crediting starts
-          // right away (so short rides aren't stuck doing nothing for the
-          // next several minutes), but activeRide.inferenceFixes keeps
-          // accumulating below and gets re-checked against every new fix
-          // until DIRECTION_CONFIRMATION_WINDOW_S has elapsed, correcting
-          // itself if the fast guess turns out wrong.
-          activeRide.directionLocked = true;
-          activeRide.dirKey = chosen.dirKey;
-          activeRide.pointer = chosen.startPointer;
-          onStatus(`Riding toward ${lineDirectionsIndex[chosen.dirKey].orderedStops[chosen.startPointer + 1].name} (initial estimate, still confirming).`);
-        }
+    if (activeRide.resolvedDirKey === null) {
+      // Still ambiguous: check each candidate direction's own immediate
+      // next stop. They're genuinely different physical stops (the two
+      // directions diverge right away from the boarding point), so only
+      // the real one can ever be reached - whichever fires first both
+      // resolves the direction and credits that first segment at once.
+      for (const cand of activeRide.candidates) {
+        const destinationStop = cand.dir.orderedStops[cand.pointer + 1];
+        if (!destinationStop || !isNearDestinationStop(fix, destinationStop)) continue;
+        activeRide.resolvedDirKey = cand.dirKey;
+        activeRide.pointer = cand.pointer + 1;
+        activeRide.candidates = null;
+        const segmentId = cand.dir.orderedSegmentIds[cand.pointer];
+        const wasNew = onSegmentCredited(segmentId);
+        if (wasNew) activeRide.creditedSegmentIds.push(segmentId);
+        onStatus(`Confirmed heading toward ${destinationStop.name}.`);
+        break;
       }
-      if (!activeRide.directionLocked) return;
-    } else if (activeRide.candidates.length > 1 && !activeRide.directionSettled) {
-      // Keep validating the fast estimate against every subsequent fix,
-      // using the cumulative closing-distance signal from the very first
-      // inference fix to now - a real field test showed the fast estimate
-      // can pick the wrong direction when both candidate stops are far
-      // away (the early signal is noise-sized), so this is the safety net.
-      activeRide.inferenceFixes.push(fix);
-      const elapsedSinceFirst = (fix.timestamp - activeRide.inferenceFixes[0].timestamp) / 1000;
-      if (elapsedSinceFirst >= DIRECTION_CONFIRMATION_WINDOW_S) {
-        activeRide.directionSettled = true; // stop re-checking - treat as final from here on
-      } else {
-        const scored = activeRide.candidates.map((c) => ({
-          dirKey: c.dirKey,
-          candidate: c,
-          closing: distanceToStop(activeRide.inferenceFixes[0], c.nextStop) - distanceToStop(fix, c.nextStop),
-        }));
-        const current = scored.find((s) => s.dirKey === activeRide.dirKey);
-        const best = scored.reduce((a, b) => (b.closing > a.closing ? b : a));
-        if (best.dirKey !== activeRide.dirKey && best.closing - current.closing > DIRECTION_SWITCH_MARGIN_M) {
-          for (const segId of activeRide.creditedSegmentIds) onSegmentUncredited(segId);
-          activeRide.creditedSegmentIds = [];
-          activeRide.dirKey = best.dirKey;
-          activeRide.pointer = best.candidate.startPointer;
-          onStatus(`Corrected direction - actually heading toward ${lineDirectionsIndex[best.dirKey].orderedStops[best.candidate.startPointer + 1].name}.`);
-        }
-      }
+      return; // resolved or not, nothing else to do for this fix
     }
 
-    const dir = lineDirectionsIndex[activeRide.dirKey];
+    const dir = lineDirectionsIndex[activeRide.resolvedDirKey];
     if (activeRide.pointer >= dir.orderedSegmentIds.length) return; // reached the end of the tracked sequence
 
     const destinationStop = dir.orderedStops[activeRide.pointer + 1];
     if (isNearDestinationStop(fix, destinationStop)) {
       const segmentId = dir.orderedSegmentIds[activeRide.pointer];
-      // Only track segments THIS ride newly credited - one already
-      // explored from an earlier ride must never be un-credited later if
-      // a direction correction fires; onSegmentCredited reports whether
-      // it was actually new.
+      // Only track segments THIS ride newly credited - avoids double-
+      // counting toward this ride's own summary when a segment was
+      // already explored from an earlier ride; onSegmentCredited reports
+      // whether it was actually new.
       const wasNew = onSegmentCredited(segmentId);
       if (wasNew) activeRide.creditedSegmentIds.push(segmentId);
       onStatus(`Reached ${destinationStop.name}.`);

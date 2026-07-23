@@ -141,27 +141,3 @@ export function scoreSegmentsAgainstTrace(trace, segmentFeatures, spatialIndex, 
   }
   return hitCounts; // segIndex -> hit count, caller ranks/filters
 }
-
-// Used once, at ride start, to infer direction: given the boarding stop's
-// two candidate onward segments (one per direction the line could be
-// going), pick whichever direction's destination stop the first few
-// post-boarding fixes are moving toward (closer over time), rather than
-// asking the rider to pick a direction manually.
-export function pickLikelyDirection(recentFixes, candidateDirections) {
-  // candidateDirections: [{ dirKey, nextStop }] - nextStop is the stop
-  // after the boarding stop in that direction's sequence.
-  if (recentFixes.length < 2 || candidateDirections.length === 0) return null;
-  if (candidateDirections.length === 1) return candidateDirections[0].dirKey;
-
-  let best = null, bestScore = -Infinity;
-  for (const cand of candidateDirections) {
-    const first = distanceToStop(recentFixes[0], cand.nextStop);
-    const last = distanceToStop(recentFixes[recentFixes.length - 1], cand.nextStop);
-    const closingSpeed = first - last; // positive = getting closer to this direction's next stop
-    if (closingSpeed > bestScore) {
-      bestScore = closingSpeed;
-      best = cand.dirKey;
-    }
-  }
-  return best;
-}

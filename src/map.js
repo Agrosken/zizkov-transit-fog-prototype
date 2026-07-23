@@ -146,13 +146,6 @@ export function setSegmentExplored(map, index) {
   map.setFeatureState({ source: SEGMENTS_SOURCE_ID, id: index }, { explored: true });
 }
 
-// Mirror of setSegmentExplored - needed for the direction-correction case:
-// segments credited under a fast-estimate direction that later turns out
-// wrong get reverted, not just left credited under the wrong assumption.
-export function setSegmentUnexplored(map, index) {
-  map.setFeatureState({ source: SEGMENTS_SOURCE_ID, id: index }, { explored: false });
-}
-
 export function updateRawTrack(map, trackPoints) {
   const source = map.getSource(TRACK_SOURCE_ID);
   if (!source) return;
