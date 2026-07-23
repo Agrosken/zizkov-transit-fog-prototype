@@ -23,7 +23,16 @@ export function filterFix(fix, lastAccepted, mode) {
     const dtSeconds = (fix.timestamp - lastAccepted.timestamp) / 1000;
     if (dtSeconds > 0) {
       const distM = haversineMeters(lastAccepted, fix);
-      const speedMps = distM / dtSeconds;
+      // Subtract both fixes' own reported accuracy radii before computing
+      // speed - two fixes can legitimately be MAX_FIX_ACCURACY_M apart
+      // from GPS noise alone even when barely moving. Without this, one
+      // merely-imprecise (but still "accepted") fix becomes a bad anchor
+      // that makes every genuinely-good fix after it look like a jump,
+      // compounding indefinitely - confirmed in a real field test export
+      // where a 28m-accuracy fix caused the next two real fixes to be
+      // rejected as "140 m/s" and "45 m/s".
+      const effectiveDistM = Math.max(0, distM - fix.accuracy - lastAccepted.accuracy);
+      const speedMps = effectiveDistM / dtSeconds;
       const ceiling = MAX_PLAUSIBLE_SPEED_MPS_BY_MODE[mode] ?? DEFAULT_MAX_PLAUSIBLE_SPEED_MPS;
       if (speedMps > ceiling) {
         return { accepted: false, reason: `implausible speed ${speedMps.toFixed(1)} m/s for mode ${mode}` };

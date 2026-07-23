@@ -14,6 +14,8 @@ const TRACK_SOURCE_ID = 'raw-track';
 const TRACK_LAYER_ID = 'raw-track-layer';
 const BOUNDARY_SOURCE_ID = 'boundary';
 const BOUNDARY_LAYER_ID = 'boundary-layer';
+const STOPS_SOURCE_ID = 'transit-stops';
+const STOPS_LAYER_ID = 'transit-stops-layer';
 
 export function createMap() {
   const map = new maplibregl.Map({
@@ -28,8 +30,16 @@ export function createMap() {
   // until they pan away, and clicking the same control button again
   // resumes centering - exactly the "auto-center unless manually moved,
   // with a recenter button" behavior asked for.
+  // maximumAge tolerates a slightly-stale cached position instead of
+  // forcing a fresh GPS read every time - reduces how often the control
+  // re-centers the camera, which is the likely cause of the map-label
+  // flicker seen in the first field test (MapLibre recalculates label
+  // collision on every camera move; continuous auto-follow means that's
+  // every single position update). Not a full fix - if labels still
+  // flicker after this, the next step is disabling continuous auto-follow
+  // entirely in favor of center-once-per-tap.
   const geolocate = new maplibregl.GeolocateControl({
-    positionOptions: { enableHighAccuracy: true },
+    positionOptions: { enableHighAccuracy: true, maximumAge: 5000 },
     trackUserLocation: true,
     showUserHeading: true,
   });
@@ -94,6 +104,27 @@ export function addSegmentsLayers(map, segmentsGeoJSON) {
     source: TRACK_SOURCE_ID,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': '#ff5da2', 'line-width': 2, 'line-opacity': 0.6, 'line-dasharray': [1, 2] },
+  });
+}
+
+// Stop markers, rendered above the line layers. Radius floors at 2px even
+// at the most zoomed-out levels (rather than shrinking toward invisible
+// the way the basemap's own POI labels do) - the field test found stops
+// impossible to see while zoomed out enough to watch a whole ride's
+// progress at a glance.
+export function addStopsLayer(map, stopsGeoJSON) {
+  map.addSource(STOPS_SOURCE_ID, { type: 'geojson', data: stopsGeoJSON });
+  map.addLayer({
+    id: STOPS_LAYER_ID,
+    type: 'circle',
+    source: STOPS_SOURCE_ID,
+    paint: {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 2, 14, 3.5, 18, 6],
+      'circle-color': '#ffffff',
+      'circle-stroke-color': '#333333',
+      'circle-stroke-width': 1,
+      'circle-opacity': 0.9,
+    },
   });
 }
 

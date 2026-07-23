@@ -1,0 +1,1397 @@
+{
+  "checkedAt": "2026-07-23T11:13:37.000Z",
+  "flagged": [
+    {
+      "shortName": "5",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "Újezd – Lazarská: dočasné přerušení provozu tramvají",
+          "link": "https://pid.cz/zmena/ujezd-lazarska-docasne-preruseni-provozu-tramvaji-42153-3/",
+          "dateFromSec": 1784325600,
+          "dateToSec": 1786399140,
+          "lines": [
+            "2",
+            "4",
+            "5",
+            "9",
+            "18",
+            "22",
+            "23",
+            "42",
+            "93",
+            "97",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "7",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "Želivského - Nákladové nádraží Žižkov - Provoz omezen, Zpoždění spojů",
+          "link": "https://pid.cz/zmena/zelivskeho-nakladove-nadrazi-zizkov-34469-1/",
+          "dateFromSec": 1784804160,
+          "dateToSec": null,
+          "lines": [
+            "7",
+            "10",
+            "11",
+            "26"
+          ],
+          "source": "mimoradnosti (current/short-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "9",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "Újezd – Lazarská: dočasné přerušení provozu tramvají",
+          "link": "https://pid.cz/zmena/ujezd-lazarska-docasne-preruseni-provozu-tramvaji-42153-3/",
+          "dateFromSec": 1784325600,
+          "dateToSec": 1786399140,
+          "lines": [
+            "2",
+            "4",
+            "5",
+            "9",
+            "18",
+            "22",
+            "23",
+            "42",
+            "93",
+            "97",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "U Zvonu (z centra): dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/u-zvonu-z-centra-docasne-premisteni-zastavky-3090-3/",
+          "dateFromSec": 1773504000,
+          "dateToSec": 1788192000,
+          "lines": [
+            "9",
+            "10",
+            "15",
+            "16",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "10",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "U Zvonu (z centra): dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/u-zvonu-z-centra-docasne-premisteni-zastavky-3090-3/",
+          "dateFromSec": 1773504000,
+          "dateToSec": 1788192000,
+          "lines": [
+            "9",
+            "10",
+            "15",
+            "16",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Želivského - Nákladové nádraží Žižkov - Provoz omezen, Zpoždění spojů",
+          "link": "https://pid.cz/zmena/zelivskeho-nakladove-nadrazi-zizkov-34469-1/",
+          "dateFromSec": 1784804160,
+          "dateToSec": null,
+          "lines": [
+            "7",
+            "10",
+            "11",
+            "26"
+          ],
+          "source": "mimoradnosti (current/short-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "11",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "I. P. Pavlova – Muzeum: dočasné přerušení provozu tramvají",
+          "link": "https://pid.cz/zmena/i-p-pavlova-muzeum-docasne-preruseni-provozu-tramvaji-2746-3/",
+          "dateFromSec": 1749852000,
+          "dateToSec": null,
+          "lines": [
+            "11",
+            "13"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Želivského - Nákladové nádraží Žižkov - Provoz omezen, Zpoždění spojů",
+          "link": "https://pid.cz/zmena/zelivskeho-nakladove-nadrazi-zizkov-34469-1/",
+          "dateFromSec": 1784804160,
+          "dateToSec": null,
+          "lines": [
+            "7",
+            "10",
+            "11",
+            "26"
+          ],
+          "source": "mimoradnosti (current/short-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "13",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "I. P. Pavlova – Muzeum: dočasné přerušení provozu tramvají",
+          "link": "https://pid.cz/zmena/i-p-pavlova-muzeum-docasne-preruseni-provozu-tramvaji-2746-3/",
+          "dateFromSec": 1749852000,
+          "dateToSec": null,
+          "lines": [
+            "11",
+            "13"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "15",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "U Zvonu (z centra): dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/u-zvonu-z-centra-docasne-premisteni-zastavky-3090-3/",
+          "dateFromSec": 1773504000,
+          "dateToSec": 1788192000,
+          "lines": [
+            "9",
+            "10",
+            "15",
+            "16",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "16",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "U Zvonu (z centra): dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/u-zvonu-z-centra-docasne-premisteni-zastavky-3090-3/",
+          "dateFromSec": 1773504000,
+          "dateToSec": 1788192000,
+          "lines": [
+            "9",
+            "10",
+            "15",
+            "16",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "26",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "Želivského - Nákladové nádraží Žižkov - Provoz omezen, Zpoždění spojů",
+          "link": "https://pid.cz/zmena/zelivskeho-nakladove-nadrazi-zizkov-34469-1/",
+          "dateFromSec": 1784804160,
+          "dateToSec": null,
+          "lines": [
+            "7",
+            "10",
+            "11",
+            "26"
+          ],
+          "source": "mimoradnosti (current/short-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "31",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "Vysočanská: dočasné zrušení zastávky",
+          "link": "https://pid.cz/zmena/vysocanska-docasne-zruseni-zastavky-3216-3/",
+          "dateFromSec": 1780281060,
+          "dateToSec": 1788229860,
+          "lines": [
+            "12",
+            "31",
+            "92"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "98",
+      "mode": "tram",
+      "exceptions": [
+        {
+          "title": "Újezd – Lazarská: dočasné přerušení provozu tramvají",
+          "link": "https://pid.cz/zmena/ujezd-lazarska-docasne-preruseni-provozu-tramvaji-42153-3/",
+          "dateFromSec": 1784325600,
+          "dateToSec": 1786399140,
+          "lines": [
+            "2",
+            "4",
+            "5",
+            "9",
+            "18",
+            "22",
+            "23",
+            "42",
+            "93",
+            "97",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "U Zvonu (z centra): dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/u-zvonu-z-centra-docasne-premisteni-zastavky-3090-3/",
+          "dateFromSec": 1773504000,
+          "dateToSec": 1788192000,
+          "lines": [
+            "9",
+            "10",
+            "15",
+            "16",
+            "98",
+            "99"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "101",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Chorvatská: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/chorvatska-docasna-zmena-trasy-a-zastavek-autobusu-3187-3/",
+          "dateFromSec": 1779071400,
+          "dateToSec": null,
+          "lines": [
+            "101"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Moskevská: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/moskevska-docasna-zmena-trasy-a-zastavek-autobusu-3122-3/",
+          "dateFromSec": 1775529000,
+          "dateToSec": 1788213600,
+          "lines": [
+            "101"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "133",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Na Palouku: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-palouku-docasna-zmena-trasy-a-zastavek-autobusu-2855-3/",
+          "dateFromSec": 1755311400,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "146",
+            "155",
+            "188",
+            "199",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Florenc: dočasné přemístění zastávek",
+          "link": "https://pid.cz/zmena/florenc-docasne-premisteni-zastavek-2467-3/",
+          "dateFromSec": 1727749800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "194",
+            "207",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Pernerova: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/pernerova-docasne-premisteni-zastavky-2420-3/",
+          "dateFromSec": 1724725800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "207",
+            "908"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "135",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Spořilov: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/sporilov-docasne-premisteni-zastavky-42115-3/",
+          "dateFromSec": 1782885660,
+          "dateToSec": 1790805600,
+          "lines": [
+            "118",
+            "135",
+            "136",
+            "170",
+            "213",
+            "905"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Florenc: dočasné přemístění zastávek",
+          "link": "https://pid.cz/zmena/florenc-docasne-premisteni-zastavek-2467-3/",
+          "dateFromSec": 1727749800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "194",
+            "207",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Pernerova: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/pernerova-docasne-premisteni-zastavky-2420-3/",
+          "dateFromSec": 1724725800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "207",
+            "908"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "136",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Pod Krejcárkem: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pod-krejcarkem-docasna-zmena-trasy-a-zastavek-autobusu-42172-3/",
+          "dateFromSec": 1784514600,
+          "dateToSec": null,
+          "lines": [
+            "136",
+            "207",
+            "913",
+            "914"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Spořilov: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/sporilov-docasne-premisteni-zastavky-42115-3/",
+          "dateFromSec": 1782885660,
+          "dateToSec": 1790805600,
+          "lines": [
+            "118",
+            "135",
+            "136",
+            "170",
+            "213",
+            "905"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "ulice Hartigova - Zpoždění spojů",
+          "link": "https://pid.cz/zmena/ulice-hartigova-34468-1/",
+          "dateFromSec": 1784788200,
+          "dateToSec": null,
+          "lines": [
+            "136"
+          ],
+          "source": "mimoradnosti (current/short-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "139",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Žitavského: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/zitavskeho-docasna-zmena-trasy-a-zastavek-autobusu-42135-3/",
+          "dateFromSec": 1783909800,
+          "dateToSec": 1788213540,
+          "lines": [
+            "139",
+            "246",
+            "314",
+            "338",
+            "360",
+            "361",
+            "390",
+            "917"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "146",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Na Palouku: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-palouku-docasna-zmena-trasy-a-zastavek-autobusu-2855-3/",
+          "dateFromSec": 1755311400,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "146",
+            "155",
+            "188",
+            "199",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "155",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Na Palouku: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-palouku-docasna-zmena-trasy-a-zastavek-autobusu-2855-3/",
+          "dateFromSec": 1755311400,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "146",
+            "155",
+            "188",
+            "199",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "175",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Florenc: dočasné přemístění zastávek",
+          "link": "https://pid.cz/zmena/florenc-docasne-premisteni-zastavek-2467-3/",
+          "dateFromSec": 1727749800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "194",
+            "207",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Pernerova: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/pernerova-docasne-premisteni-zastavky-2420-3/",
+          "dateFromSec": 1724725800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "207",
+            "908"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "177",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Prázdninový provoz PID",
+          "link": "https://pid.cz/zmena/prazdninovy-provoz-pid-42128-3/",
+          "dateFromSec": 1782527460,
+          "dateToSec": 1787954400,
+          "lines": [
+            "122",
+            "143",
+            "168",
+            "177",
+            "182",
+            "185",
+            "187",
+            "229",
+            "326"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Hostivařské náměstí: dočasné přemístění zastávek",
+          "link": "https://pid.cz/zmena/hostivarske-namesti-docasne-premisteni-zastavek-3197-3/",
+          "dateFromSec": 1779676260,
+          "dateToSec": 1790028000,
+          "lines": [
+            "177",
+            "181",
+            "182",
+            "901",
+            "906"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "188",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Na Pankráci, Hvězdova: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-pankraci-hvezdova-docasna-zmena-trasy-a-zastavek-autobusu-42162-3/",
+          "dateFromSec": 1784514600,
+          "dateToSec": 1785794340,
+          "lines": [
+            "106",
+            "188",
+            "905",
+            "910"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "V Korytech: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/v-korytech-docasna-zmena-trasy-a-zastavek-autobusu-42137-3/",
+          "dateFromSec": 1782873000,
+          "dateToSec": null,
+          "lines": [
+            "154",
+            "188",
+            "901",
+            "906"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Na Palouku: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-palouku-docasna-zmena-trasy-a-zastavek-autobusu-2855-3/",
+          "dateFromSec": 1755311400,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "146",
+            "155",
+            "188",
+            "199",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "195",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "199",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Na Palouku: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-palouku-docasna-zmena-trasy-a-zastavek-autobusu-2855-3/",
+          "dateFromSec": 1755311400,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "146",
+            "155",
+            "188",
+            "199",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "207",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Pod Krejcárkem: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pod-krejcarkem-docasna-zmena-trasy-a-zastavek-autobusu-42172-3/",
+          "dateFromSec": 1784514600,
+          "dateToSec": null,
+          "lines": [
+            "136",
+            "207",
+            "913",
+            "914"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Florenc: dočasné přemístění zastávek",
+          "link": "https://pid.cz/zmena/florenc-docasne-premisteni-zastavek-2467-3/",
+          "dateFromSec": 1727749800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "194",
+            "207",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Pernerova: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/pernerova-docasne-premisteni-zastavky-2420-3/",
+          "dateFromSec": 1724725800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "207",
+            "908"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "213",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Spořilov: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/sporilov-docasne-premisteni-zastavky-42115-3/",
+          "dateFromSec": 1782885660,
+          "dateToSec": 1790805600,
+          "lines": [
+            "118",
+            "135",
+            "136",
+            "170",
+            "213",
+            "905"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "903",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "905",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Na Pankráci, Hvězdova: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-pankraci-hvezdova-docasna-zmena-trasy-a-zastavek-autobusu-42162-3/",
+          "dateFromSec": 1784514600,
+          "dateToSec": 1785794340,
+          "lines": [
+            "106",
+            "188",
+            "905",
+            "910"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Spořilov: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/sporilov-docasne-premisteni-zastavky-42115-3/",
+          "dateFromSec": 1782885660,
+          "dateToSec": 1790805600,
+          "lines": [
+            "118",
+            "135",
+            "136",
+            "170",
+            "213",
+            "905"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Mokrá: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/mokra-docasne-premisteni-zastavky-42144-3/",
+          "dateFromSec": 1782716400,
+          "dateToSec": null,
+          "lines": [
+            "203",
+            "901",
+            "905",
+            "906"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Kuchyňka: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/kuchynka-docasne-premisteni-zastavky-642-3/",
+          "dateFromSec": 1622271600,
+          "dateToSec": null,
+          "lines": [
+            "201",
+            "905",
+            "911"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "907",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Pod Zatáčkou: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/pod-zatackou-docasne-premisteni-zastavky-42117-3/",
+          "dateFromSec": 1782441000,
+          "dateToSec": 1786053540,
+          "lines": [
+            "129",
+            "242",
+            "318",
+            "907"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Žabovřesky: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/zabovresky-docasne-premisteni-zastavky-3190-3/",
+          "dateFromSec": 1779429600,
+          "dateToSec": 1790805540,
+          "lines": [
+            "129",
+            "242",
+            "247",
+            "318",
+            "907"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "908",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Na Palouku: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-palouku-docasna-zmena-trasy-a-zastavek-autobusu-2855-3/",
+          "dateFromSec": 1755311400,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "146",
+            "155",
+            "188",
+            "199",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Florenc: dočasné přemístění zastávek",
+          "link": "https://pid.cz/zmena/florenc-docasne-premisteni-zastavek-2467-3/",
+          "dateFromSec": 1727749800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "194",
+            "207",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Pernerova: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/pernerova-docasne-premisteni-zastavky-2420-3/",
+          "dateFromSec": 1724725800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "207",
+            "908"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "909",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Počernická: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pocernicka-docasna-zmena-trasy-a-zastavek-autobusu-2952-3/",
+          "dateFromSec": 1760605500,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "155",
+            "177",
+            "188",
+            "195",
+            "199",
+            "228",
+            "903",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Na Palouku: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/na-palouku-docasna-zmena-trasy-a-zastavek-autobusu-2855-3/",
+          "dateFromSec": 1755311400,
+          "dateToSec": 1787781540,
+          "lines": [
+            "133",
+            "146",
+            "155",
+            "188",
+            "199",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Florenc: dočasné přemístění zastávek",
+          "link": "https://pid.cz/zmena/florenc-docasne-premisteni-zastavek-2467-3/",
+          "dateFromSec": 1727749800,
+          "dateToSec": null,
+          "lines": [
+            "133",
+            "135",
+            "175",
+            "194",
+            "207",
+            "908",
+            "909"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "911",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Kuchyňka: dočasné přemístění zastávky",
+          "link": "https://pid.cz/zmena/kuchynka-docasne-premisteni-zastavky-642-3/",
+          "dateFromSec": 1622271600,
+          "dateToSec": null,
+          "lines": [
+            "201",
+            "905",
+            "911"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "913",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Pod Krejcárkem: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pod-krejcarkem-docasna-zmena-trasy-a-zastavek-autobusu-42172-3/",
+          "dateFromSec": 1784514600,
+          "dateToSec": null,
+          "lines": [
+            "136",
+            "207",
+            "913",
+            "914"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "914",
+      "mode": "bus",
+      "exceptions": [
+        {
+          "title": "Pod Krejcárkem: dočasná změna trasy a zastávek autobusů",
+          "link": "https://pid.cz/zmena/pod-krejcarkem-docasna-zmena-trasy-a-zastavek-autobusu-42172-3/",
+          "dateFromSec": 1784514600,
+          "dateToSec": null,
+          "lines": [
+            "136",
+            "207",
+            "913",
+            "914"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "A",
+      "mode": "metro",
+      "exceptions": [
+        {
+          "title": "Flora A: dočasné uzavření stanice metra",
+          "link": "https://pid.cz/zmena/flora-a-docasne-uzavreni-stanice-metra-3050-3/",
+          "dateFromSec": 1770003000,
+          "dateToSec": null,
+          "lines": [
+            "A"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "C",
+      "mode": "metro",
+      "exceptions": [
+        {
+          "title": "Budějovická: dočasné omezení vstupu do stanice metra",
+          "link": "https://pid.cz/zmena/budejovicka-docasne-omezeni-vstupu-do-stanice-metra-42152-3/",
+          "dateFromSec": 1783909860,
+          "dateToSec": 1785448800,
+          "lines": [
+            "C"
+          ],
+          "source": "vyluky (planned/long-term)"
+        },
+        {
+          "title": "Florenc C: dočasné omezení vstupu a výstupu stanice metra",
+          "link": "https://pid.cz/zmena/florenc-c-docasne-omezeni-vstupu-a-vystupu-stanice-metra-1170-3/",
+          "dateFromSec": 1654482600,
+          "dateToSec": null,
+          "lines": [
+            "C"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "R16",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Praha-Smíchov",
+          "link": "https://pid.cz/zmena/praha-smichov-ve-smeru-z-prahy-208449-9/",
+          "dateFromSec": 1765666800,
+          "dateToSec": 1792447140,
+          "lines": [
+            "R16"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "R17",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Červený Újezd u Votic zastávka - Chotoviny: denní výluka",
+          "link": "https://pid.cz/zmena/cerveny-ujezd-u-votic-zastavka-chotoviny-denni-vyluka-224392-9/",
+          "dateFromSec": 1784700000,
+          "dateToSec": 1784815200,
+          "lines": [
+            "R17",
+            "R49",
+            "S90"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "R42",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Praha Masarykovo nádraží",
+          "link": "https://pid.cz/zmena/praha-masarykovo-nadrazi-219822-9/",
+          "dateFromSec": 1780279200,
+          "dateToSec": 1797116340,
+          "lines": [
+            "R24",
+            "R42",
+            "S4",
+            "S5",
+            "S54"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "R49",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Červený Újezd u Votic zastávka - Chotoviny: denní výluka",
+          "link": "https://pid.cz/zmena/cerveny-ujezd-u-votic-zastavka-chotoviny-denni-vyluka-224392-9/",
+          "dateFromSec": 1784700000,
+          "dateToSec": 1784815200,
+          "lines": [
+            "R17",
+            "R49",
+            "S90"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "S2",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Kolín – Velký Osek",
+          "link": "https://pid.cz/zmena/kolin-velky-osek-210886-9/",
+          "dateFromSec": 1768186200,
+          "dateToSec": 1797022800,
+          "lines": [
+            "XS2",
+            "S2"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "S34",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Praha Masarykovo nádraží",
+          "link": "https://pid.cz/zmena/praha-masarykovo-nadrazi-222621-9/",
+          "dateFromSec": 1781229600,
+          "dateToSec": null,
+          "lines": [
+            "S34"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "T1",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Pražský motoráček: změna trasy",
+          "link": "https://pid.cz/zmena/prazsky-motoracek-zmena-trasy-223532-9/",
+          "dateFromSec": 1783144020,
+          "dateToSec": 1792337580,
+          "lines": [
+            "T1"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "T2",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Nymburk hl. n. – Rožďalovice",
+          "link": "https://pid.cz/zmena/nymburk-hl-n-rozdalovice-224537-9/",
+          "dateFromSec": 1784683800,
+          "dateToSec": 1786226340,
+          "lines": [
+            "S21",
+            "T2"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    },
+    {
+      "shortName": "T10",
+      "mode": "train",
+      "exceptions": [
+        {
+          "title": "Krásná Lípa - Mikulášovice dolní nádraží (mimo systém PID)",
+          "link": "https://pid.cz/zmena/krasna-lipa-mikulasovice-dolni-nadrazi-mimo-system-pid-216958-9/",
+          "dateFromSec": 1776495600,
+          "dateToSec": 1788111000,
+          "lines": [
+            "T10"
+          ],
+          "source": "vyluky (planned/long-term)"
+        }
+      ]
+    }
+  ],
+  "clearLines": [
+    "39",
+    "91",
+    "95",
+    "109",
+    "124",
+    "150",
+    "183",
+    "B",
+    "R9",
+    "R10",
+    "R18",
+    "R19",
+    "R20",
+    "R21",
+    "R26",
+    "R41",
+    "R43",
+    "S1",
+    "S3",
+    "S7",
+    "S8",
+    "S9",
+    "S61",
+    "S88",
+    "T3",
+    "T6",
+    "T7",
+    "T8",
+    "XR16"
+  ]
+}

@@ -1,8 +1,8 @@
-import { createMap, addSegmentsLayers, addBoundaryLayer, setSegmentExplored } from './map.js';
+import { createMap, addSegmentsLayers, addBoundaryLayer, addStopsLayer, setSegmentExplored } from './map.js';
 import { startTracking, stopTracking, isTracking, isSupported } from './gps.js';
 import * as wakelock from './wakelock.js';
 import { createRideController } from './ride.js';
-import { buildStopCatalog, findNearbyStops, allStopsSorted, linesServingStop } from './stops.js';
+import { buildStopCatalog, findNearbyStops, allStopsSorted, linesServingStop, stopCatalogToGeoJSON } from './stops.js';
 import { loadState, saveStateThrottled } from './storage.js';
 import { downloadTransitData } from './export.js';
 import { LINES_URL, BOUNDARY_URL, LINE_DIRECTIONS_INDEX_URL, NEARBY_STOPS_COUNT } from './config.js';
@@ -313,6 +313,7 @@ async function init() {
   await styleLoaded;
   addSegmentsLayers(map, segmentsGeoJSON);
   addBoundaryLayer(map, boundaryGeoJSON);
+  addStopsLayer(map, stopCatalogToGeoJSON(stopCatalog));
   for (const id of exploredSegmentIds) {
     const idx = idToIndex.get(id);
     if (idx !== undefined) setSegmentExplored(map, idx);

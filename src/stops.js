@@ -87,3 +87,22 @@ export function linesServingStop(nodeId, stopCatalog) {
   if (!entry) return [];
   return sortLineLabels([...entry.lines.values()]);
 }
+
+// Point FeatureCollection for map.js's stops layer - one feature per
+// physical stop, carrying which modes serve it (used to keep a stop
+// visible even when zoomed out, at minimum for whichever mode is
+// currently relevant).
+export function stopCatalogToGeoJSON(stopCatalog) {
+  return {
+    type: 'FeatureCollection',
+    features: [...stopCatalog.values()].map((s) => ({
+      type: 'Feature',
+      properties: {
+        nodeId: s.nodeId,
+        name: s.name,
+        modes: [...new Set([...s.lines.values()].map((l) => l.mode))],
+      },
+      geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
+    })),
+  };
+}

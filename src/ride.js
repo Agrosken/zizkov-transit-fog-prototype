@@ -15,7 +15,7 @@
 // naturally fails to credit that segment - no special-casing needed.
 
 import { filterFix, isNearDestinationStop, distanceToStop, pickLikelyDirection, buildSpatialIndex, scoreSegmentsAgainstTrace } from './matching.js';
-import { MATCH_DISTANCE_M, STOP_ARRIVAL_THRESHOLD_M } from './config.js';
+import { MATCH_DISTANCE_M, STOP_ARRIVAL_THRESHOLD_M, MIN_DIRECTION_INFERENCE_FIXES, MIN_DIRECTION_INFERENCE_DURATION_S } from './config.js';
 
 export function createRideController({ lineDirectionsIndex, segmentFeatures, onSegmentCredited, onStatus }) {
   let activeRide = null;
@@ -111,12 +111,21 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
     }
     activeRide.lastAcceptedFix = fix;
     activeRide.rawTrack.push(fix);
+    // Clear any lingering "skipped fix" warning now that a good fix has
+    // arrived - it was persisting on screen indefinitely otherwise, since
+    // nothing ever cleared it until the next specific status update (which
+    // might be minutes away, e.g. the next stop). Any more specific
+    // message below (direction confirmed, stop reached) overrides this in
+    // the same call, so there's no visible flicker - only the final value
+    // for this fix ever paints.
+    onStatus('');
 
     if (activeRide.kind === 'joker') return; // no live crediting for joker rides - handled post-hoc on Get Off
 
     if (!activeRide.directionLocked) {
       activeRide.inferenceFixes.push(fix);
-      if (activeRide.inferenceFixes.length >= 2) {
+      const elapsedS = (fix.timestamp - activeRide.inferenceFixes[0].timestamp) / 1000;
+      if (activeRide.inferenceFixes.length >= MIN_DIRECTION_INFERENCE_FIXES && elapsedS >= MIN_DIRECTION_INFERENCE_DURATION_S) {
         const chosenDirKey = pickLikelyDirection(
           activeRide.inferenceFixes,
           activeRide.candidates.map((c) => ({ dirKey: c.dirKey, nextStop: c.nextStop })),

@@ -3,29 +3,44 @@
 // SHARED_PATH_LATERAL_DIST_M, SHARED_PATH_BEARING_TOLERANCE_DEG), which
 // only affect data build, not runtime.
 
-// Per-mode plausible-speed ceiling for GPS fix filtering (m/s). Reasoned
-// from real-world top speeds + margin, same philosophy as the street
-// prototype's single 15 m/s constant, but per-mode since matching is
-// scoped to one known line (and therefore one known mode) at a time.
+// Per-mode plausible-speed ceiling for GPS fix filtering (m/s). Raised
+// from the original 20/35/30 after the first real field test: several
+// genuine tram fixes measured 20.7-28.2 m/s (just over the old 20 m/s
+// ceiling) and got wrongly rejected - real trams do exceed "typical
+// cruising" on faster stretches, and GPS timing jitter alone pushes
+// borderline cases over a tight threshold. Since the route is already
+// known (one line/direction is selected before tracking starts), a wider
+// ceiling costs little - the real defense against bogus jumps is the
+// accuracy-margin subtraction in matching.js's filterFix, not a tight
+// speed cap.
 export const MAX_PLAUSIBLE_SPEED_MPS_BY_MODE = {
-  tram: 20,       // 72 km/h; real top speed ~50-60 km/h + margin
-  bus: 20,
-  trolleybus: 20,
-  train: 35,      // 126 km/h; commuter rail can exceed 100 km/h between stations
-  metro: 30,      // 108 km/h; real top speed ~80-90 km/h + margin
+  tram: 30,
+  bus: 30,
+  trolleybus: 30,
+  train: 45,
+  metro: 35,
 };
-export const DEFAULT_MAX_PLAUSIBLE_SPEED_MPS = 35; // fail open (most generous) if mode is somehow unknown
+export const DEFAULT_MAX_PLAUSIBLE_SPEED_MPS = 45; // fail open (most generous) if mode is somehow unknown
 
 // A GPS fix is accepted only if its reported accuracy (radius, meters) is
-// at or below this value.
-export const MAX_FIX_ACCURACY_M = 30;
+// at or below this value. Raised from 30m after the first field test:
+// since the rider has already told the app which line/direction they're
+// on, we don't need walking-app precision - occasionally confirming
+// they're still moving along the expected route at a plausible speed is
+// enough, and it's far more forgiving of the accuracy degradation real
+// phones show when backgrounded (confirmed in the field test: accuracy
+// jumped past 100-800m for several fixes after switching apps).
+export const MAX_FIX_ACCURACY_M = 100;
 
 // A stop-to-stop segment is credited "explored" once an accepted GPS fix
 // lands within this distance (meters) of the segment's DESTINATION stop
 // (not just anywhere on the segment) - this is what makes "must actually
 // ride through it" fall out of the rule naturally: you can't be this
-// close to the far end without having traveled the segment.
-export const STOP_ARRIVAL_THRESHOLD_M = 25;
+// close to the far end without having traveled the segment. Widened
+// alongside MAX_FIX_ACCURACY_M - a looser accuracy tolerance without a
+// matching arrival radius would just mean fixes get accepted but still
+// never register as "arrived".
+export const STOP_ARRIVAL_THRESHOLD_M = 40;
 
 // General nearest-line/point matching distance (slightly more generous
 // than the street prototype's 18m, for GPS lag at transit speed).
@@ -33,6 +48,17 @@ export const MATCH_DISTANCE_M = 25;
 
 // How many nearby stops to show in the Get On/Get Off stop picker.
 export const NEARBY_STOPS_COUNT = 8;
+
+// Direction inference (which of a line's two directions the rider is
+// actually heading) waits for BOTH of these before locking - not just a
+// fix count. A real field-test export showed why: with only 2 fixes 1
+// second apart, both candidate directions' stops were ~400m away, so the
+// "closing distance" signal was ~1m - smaller than GPS noise - and the
+// wrong direction got picked. Replaying the same real fixes over an 8s
+// window instead gave a clean, correctly-signed 12m separation between
+// the two candidates.
+export const MIN_DIRECTION_INFERENCE_FIXES = 3;
+export const MIN_DIRECTION_INFERENCE_DURATION_S = 8;
 
 export const MAP_CENTER = [14.4650, 50.0850];
 export const MAP_ZOOM = 15;
