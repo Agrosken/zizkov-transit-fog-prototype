@@ -59,6 +59,7 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       candidates, // used for inference if more than one
       inferenceFixes: [],
       rawTrack: [],
+      fixLog: [],
       lastAcceptedFix: null,
       creditedSegmentIds: [],
     };
@@ -71,13 +72,21 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
     return true;
   }
 
-  function startJokerRide() {
+  // boardingNodeId/boardingStopName are optional - set when the rider
+  // picked "Other line" for a specific stop in the normal Get On flow
+  // (known boarding point, unknown line). Not used by the matching itself
+  // (that still runs on the full recorded trace), just carried through to
+  // the ride summary/history for transparency.
+  function startJokerRide({ boardingNodeId, boardingStopName } = {}) {
     activeRide = {
       kind: 'joker',
       startedAt: Date.now(),
       rawTrack: [],
+      fixLog: [],
       lastAcceptedFix: null,
       mode: 'tram', // placeholder speed-filter category; joker rides use the most permissive check anyway via matching's default
+      boardingNodeId: boardingNodeId ?? null,
+      boardingStopName: boardingStopName ?? null,
     };
     onStatus('Recording an extra/special ride - pick a line for it when you get off.');
   }
@@ -85,6 +94,17 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
   function onFix(fix) {
     if (!activeRide) return;
     const { accepted, reason } = filterFix(fix, activeRide.lastAcceptedFix, activeRide.mode);
+    // Every fix attempt is logged - accepted or not - since rejected fixes
+    // (and why) are exactly what's needed to tell whether a missed credit
+    // was a real GPS problem or a threshold that needs retuning.
+    activeRide.fixLog.push({
+      timestamp: fix.timestamp,
+      lat: fix.lat,
+      lon: fix.lon,
+      accuracy: fix.accuracy,
+      accepted,
+      reason: accepted ? null : reason,
+    });
     if (!accepted) {
       onStatus(`Skipped fix (${reason})`);
       return;
@@ -132,7 +152,15 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       const jokerRide = activeRide;
       activeRide = null;
       onStatus('Ride ended. Pick which line to credit it to.');
-      return { kind: 'joker', rawTrack: jokerRide.rawTrack, startedAt: jokerRide.startedAt, endedAt: Date.now() };
+      return {
+        kind: 'joker',
+        rawTrack: jokerRide.rawTrack,
+        fixLog: jokerRide.fixLog,
+        startedAt: jokerRide.startedAt,
+        endedAt: Date.now(),
+        boardingNodeId: jokerRide.boardingNodeId,
+        boardingStopName: jokerRide.boardingStopName,
+      };
     }
 
     const summary = {
@@ -148,6 +176,7 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       endedAt: Date.now(),
       creditedSegmentIds: activeRide.creditedSegmentIds,
       rawTrack: activeRide.rawTrack,
+      fixLog: activeRide.fixLog,
     };
     activeRide = null;
     onStatus(`Ride ended. Credited ${summary.creditedSegmentIds.length} segment(s).`);

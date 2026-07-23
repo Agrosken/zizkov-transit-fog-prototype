@@ -2,13 +2,12 @@ import { createMap, addSegmentsLayers, addBoundaryLayer, setSegmentExplored } fr
 import { startTracking, stopTracking, isTracking, isSupported } from './gps.js';
 import * as wakelock from './wakelock.js';
 import { createRideController } from './ride.js';
-import { buildStopCatalog, findNearbyStops, linesServingStop } from './stops.js';
+import { buildStopCatalog, findNearbyStops, allStopsSorted, linesServingStop } from './stops.js';
 import { loadState, saveStateThrottled } from './storage.js';
 import { downloadTransitData } from './export.js';
 import { LINES_URL, BOUNDARY_URL, LINE_DIRECTIONS_INDEX_URL, NEARBY_STOPS_COUNT } from './config.js';
 
 const getOnBtn = document.getElementById('get-on-btn');
-const extraBtn = document.getElementById('extra-btn');
 const exportBtn = document.getElementById('export-btn');
 const distanceEl = document.getElementById('distance');
 const lineCountEl = document.getElementById('line-count');
@@ -61,8 +60,13 @@ function creditSegment(segmentId) {
   refreshStats();
 }
 
-// --- Generic bottom-sheet picker: shows a list, resolves with the picked item ---
-function showPicker(title, items, renderRow) {
+// --- Generic bottom-sheet picker: shows a list, resolves with the picked
+// item. `items` is what's shown with an empty search box (e.g. nearest-N
+// stops); optional `searchItems` is the larger pool the filter box searches
+// once the user types something (e.g. the full stop catalog) - the full
+// list never needs its own row/button, it just lives behind the search
+// bar for the weak-GPS case where the wanted stop isn't nearby-sorted. ---
+function showPicker(title, items, renderRow, searchItems) {
   return new Promise((resolve) => {
     pickerTitle.textContent = title;
     pickerFilter.value = '';
@@ -71,9 +75,10 @@ function showPicker(title, items, renderRow) {
     function render(filterText) {
       pickerList.innerHTML = '';
       const lower = filterText.trim().toLowerCase();
+      const pool = lower && searchItems ? searchItems : items;
       const filtered = lower
-        ? items.filter((it) => it.searchText.toLowerCase().includes(lower))
-        : items;
+        ? pool.filter((it) => it.searchText.toLowerCase().includes(lower))
+        : pool;
       for (const item of filtered) {
         const row = document.createElement('div');
         row.className = 'picker-row';
@@ -120,15 +125,15 @@ async function pickNearbyStop(title) {
     setStatus(`Location error: ${e.message}`);
     return null;
   }
+  const stopToItem = (s) => ({ value: s, searchText: s.name });
   const nearby = findNearbyStops(pos.lat, pos.lon, stopCatalog, NEARBY_STOPS_COUNT);
-  const items = nearby.map((s) => ({
-    value: s,
-    searchText: s.name,
-  }));
-  return showPicker(title, items, (item) => `
+  const items = nearby.map(stopToItem);
+  const searchItems = allStopsSorted(pos.lat, pos.lon, stopCatalog).map(stopToItem);
+  const renderRow = (item) => `
     <div class="label">${item.value.name}</div>
     <div class="dist">${Math.round(item.value.distanceM)}m</div>
-  `);
+  `;
+  return showPicker(title, items, renderRow, searchItems);
 }
 
 async function pickLineAtStop(stop) {
@@ -137,11 +142,29 @@ async function pickLineAtStop(stop) {
     value: l,
     searchText: `${l.routeShortName} ${l.routeLongName}`,
   }));
-  return showPicker(`Boarding at ${stop.name}`, items, (item) => `
-    <div class="swatch" style="background:${item.value.routeColor}"></div>
-    <div class="label">${item.value.routeShortName}</div>
-    <div class="sub">${item.value.routeLongName}</div>
-  `);
+  // Always-available fallback for a vehicle running a line that doesn't
+  // normally serve this stop (reroute, depot move, special run) - starts
+  // the same GPS-path-matching flow as before ("Extra ride"), just reached
+  // from here instead of a separate button, with the boarding stop already
+  // known.
+  items.push({
+    value: { other: true },
+    searchText: 'other line special extra',
+  });
+  return showPicker(`Boarding at ${stop.name}`, items, (item) => {
+    if (item.value.other) {
+      return `
+        <div class="swatch" style="background:#555"></div>
+        <div class="label">Other line</div>
+        <div class="sub">Not usually listed here - reroute, depot move, special run</div>
+      `;
+    }
+    return `
+      <div class="swatch" style="background:${item.value.routeColor}"></div>
+      <div class="label">${item.value.routeShortName}</div>
+      <div class="sub">${item.value.routeLongName}</div>
+    `;
+  });
 }
 
 async function pickJokerLine(candidates) {
@@ -174,79 +197,79 @@ function stopGpsForRide() {
 }
 
 async function handleGetOn() {
-  if (rideController.isRiding() && rideController.getRideKind() === 'normal') {
-    // End the ride: pick alighting stop.
-    const stop = await pickNearbyStop('Where are you getting off?');
+  if (rideController.isRiding()) {
+    const kind = rideController.getRideKind();
+
+    // Normal rides ask which stop was reached; joker rides skip this and
+    // rely entirely on post-hoc trace matching (see findJokerCandidates).
+    let alightingStop = null;
+    if (kind === 'normal') {
+      alightingStop = await pickNearbyStop('Where are you getting off?');
+    }
     stopGpsForRide();
-    const summary = rideController.endRide({ alightingNodeId: stop?.nodeId, alightingStopName: stop?.name });
-    if (summary) {
+    const summary = rideController.endRide(
+      kind === 'normal' ? { alightingNodeId: alightingStop?.nodeId, alightingStopName: alightingStop?.name } : undefined,
+    );
+    getOnBtn.textContent = 'Get On';
+    getOnBtn.classList.remove('riding');
+
+    if (summary?.kind === 'joker') {
+      const candidates = rideController.findJokerCandidates(summary.rawTrack, exploredSegmentIds);
+      const chosen = await pickJokerLine(candidates);
+      if (chosen) {
+        for (const segId of chosen.creditableSegmentIds) creditSegment(segId);
+        completedRides.push({
+          kind: 'joker',
+          routeId: chosen.routeId,
+          routeShortName: chosen.routeShortName,
+          mode: chosen.mode,
+          startedAt: summary.startedAt,
+          endedAt: summary.endedAt,
+          creditedSegmentIds: chosen.creditableSegmentIds,
+          wasJoker: true,
+          attributedFrom: chosen.routeId,
+          boardingStopName: summary.boardingStopName,
+          rawTrack: summary.rawTrack,
+          fixLog: summary.fixLog,
+          // Every candidate line the trace was matched against, not just
+          // the one picked - so a "my real line didn't even show up as an
+          // option" report can actually be diagnosed from the export.
+          candidatesConsidered: candidates.map((c) => ({
+            routeId: c.routeId,
+            routeShortName: c.routeShortName,
+            newSegmentCount: c.newSegmentCount,
+          })),
+        });
+        saveStateThrottled(exploredSegmentIds, completedRides);
+        setStatus(`Attributed to ${chosen.routeShortName} (${chosen.creditableSegmentIds.length} segment(s)).`);
+      }
+    } else if (summary) {
       completedRides.push({ ...summary, wasJoker: false });
       saveStateThrottled(exploredSegmentIds, completedRides);
     }
-    getOnBtn.textContent = 'Get On';
-    getOnBtn.classList.remove('riding');
-    extraBtn.disabled = false;
     return;
   }
-
-  if (rideController.isRiding()) return; // a joker ride is active, ignore
 
   const stop = await pickNearbyStop('Where are you boarding?');
   if (!stop) return;
   const line = await pickLineAtStop(stop);
   if (!line) return;
 
-  const ok = rideController.startNormalRide({
-    routeId: line.routeId,
-    routeShortName: line.routeShortName,
-    mode: line.mode,
-    boardingNodeId: stop.nodeId,
-    boardingStopName: stop.name,
-  });
-  if (!ok) return;
+  if (line.other) {
+    rideController.startJokerRide({ boardingNodeId: stop.nodeId, boardingStopName: stop.name });
+  } else {
+    const ok = rideController.startNormalRide({
+      routeId: line.routeId,
+      routeShortName: line.routeShortName,
+      mode: line.mode,
+      boardingNodeId: stop.nodeId,
+      boardingStopName: stop.name,
+    });
+    if (!ok) return;
+  }
 
   getOnBtn.textContent = 'Get Off';
   getOnBtn.classList.add('riding');
-  extraBtn.disabled = true;
-  startGpsForRide();
-}
-
-async function handleExtra() {
-  if (rideController.isRiding() && rideController.getRideKind() === 'joker') {
-    stopGpsForRide();
-    const summary = rideController.endRide();
-    extraBtn.textContent = 'Extra ride';
-    extraBtn.classList.remove('riding');
-    getOnBtn.disabled = false;
-    if (!summary) return;
-
-    const candidates = rideController.findJokerCandidates(summary.rawTrack, exploredSegmentIds);
-    const chosen = await pickJokerLine(candidates);
-    if (chosen) {
-      for (const segId of chosen.creditableSegmentIds) creditSegment(segId);
-      completedRides.push({
-        kind: 'joker',
-        routeId: chosen.routeId,
-        routeShortName: chosen.routeShortName,
-        mode: chosen.mode,
-        startedAt: summary.startedAt,
-        endedAt: summary.endedAt,
-        creditedSegmentIds: chosen.creditableSegmentIds,
-        wasJoker: true,
-        attributedFrom: chosen.routeId,
-      });
-      saveStateThrottled(exploredSegmentIds, completedRides);
-      setStatus(`Attributed to ${chosen.routeShortName} (${chosen.creditableSegmentIds.length} segment(s)).`);
-    }
-    return;
-  }
-
-  if (rideController.isRiding()) return; // a normal ride is active, ignore
-
-  rideController.startJokerRide();
-  extraBtn.textContent = 'End extra ride';
-  extraBtn.classList.add('riding');
-  getOnBtn.disabled = true;
   startGpsForRide();
 }
 
@@ -254,7 +277,6 @@ async function init() {
   if (!isSupported()) {
     setStatus('Geolocation is not supported on this device/browser.');
     getOnBtn.disabled = true;
-    extraBtn.disabled = true;
     return;
   }
 
@@ -303,7 +325,6 @@ async function init() {
   }
 
   getOnBtn.addEventListener('click', handleGetOn);
-  extraBtn.addEventListener('click', handleExtra);
   exportBtn.addEventListener('click', () => {
     downloadTransitData({ exploredSegmentIds, completedRides, segmentFeatures });
     setStatus('Exported.');

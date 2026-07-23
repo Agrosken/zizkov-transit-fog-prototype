@@ -69,22 +69,6 @@ html, body {
   background: #333;
 }
 
-#extra-btn {
-  font-size: 13px;
-  font-weight: 500;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.5);
-  background: rgba(0,0,0,0.35);
-  color: white;
-  cursor: pointer;
-}
-
-#extra-btn.riding {
-  background: #333;
-  border-color: #ffdca8;
-}
-
 #export-btn {
   font-size: 13px;
   font-weight: 500;

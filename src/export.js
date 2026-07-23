@@ -31,6 +31,26 @@ export function downloadTransitData({ exploredSegmentIds, completedRides, segmen
     entry.totalRides = completedRides.filter((r) => r.routeId === entry.routeId).length;
   }
 
+  // Quick GPS-quality rollup across every ride's fixLog, so "was GPS the
+  // problem" doesn't require opening each ride's fix-by-fix log by hand -
+  // rejectionsByReason groups by the leading word (e.g. "accuracy" vs
+  // "implausible") since the full reason string includes a specific
+  // measured value that differs per fix.
+  let acceptedFixes = 0;
+  let rejectedFixes = 0;
+  const rejectionsByReason = {};
+  for (const ride of completedRides) {
+    for (const entry of ride.fixLog || []) {
+      if (entry.accepted) {
+        acceptedFixes++;
+      } else {
+        rejectedFixes++;
+        const key = (entry.reason || 'unknown').split(' ')[0];
+        rejectionsByReason[key] = (rejectionsByReason[key] || 0) + 1;
+      }
+    }
+  }
+
   const payload = {
     exportedAt: new Date().toISOString(),
     summary: {
@@ -42,6 +62,9 @@ export function downloadTransitData({ exploredSegmentIds, completedRides, segmen
       linesCompleted: [...byRoute.values()].filter((r) => r.exploredSegments === r.totalSegments).length,
       totalRides: completedRides.length,
       jokerRides: completedRides.filter((r) => r.wasJoker).length,
+      acceptedFixes,
+      rejectedFixes,
+      rejectionsByReason,
     },
     perLineSummary: [...byRoute.values()],
     completedRides,

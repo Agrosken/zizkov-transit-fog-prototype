@@ -55,6 +55,20 @@ export function findNearbyStops(userLat, userLon, stopCatalog, count) {
   return withDist.slice(0, count);
 }
 
+// Full catalog, sorted by name rather than distance - the fallback for when
+// the nearest-N list doesn't contain the stop the user actually wants
+// (weak/wrong GPS fix). Distance is still attached (from whatever position
+// we have) since it's cheap and mildly useful, but sort order favors
+// findability-by-name over proximity here.
+export function allStopsSorted(userLat, userLon, stopCatalog) {
+  const withDist = [...stopCatalog.values()].map((s) => ({
+    ...s,
+    distanceM: haversineMeters({ lat: userLat, lon: userLon }, s),
+  }));
+  withDist.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+  return withDist;
+}
+
 // "Alphabetically/numerically ascending, letters first" - metro letters
 // (A, B, C) before numbered tram/bus/trolleybus/train lines, natural sort
 // within each group so "9" sorts before "10".

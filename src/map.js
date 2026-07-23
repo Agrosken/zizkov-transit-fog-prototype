@@ -16,12 +16,33 @@ const BOUNDARY_SOURCE_ID = 'boundary';
 const BOUNDARY_LAYER_ID = 'boundary-layer';
 
 export function createMap() {
-  return new maplibregl.Map({
+  const map = new maplibregl.Map({
     container: 'map',
     style: MAP_STYLE_URL,
     center: MAP_CENTER,
     zoom: MAP_ZOOM,
   });
+
+  // Built-in location dot + auto-follow + recenter button, rather than
+  // hand-rolling one: trackUserLocation keeps the map centered on the user
+  // until they pan away, and clicking the same control button again
+  // resumes centering - exactly the "auto-center unless manually moved,
+  // with a recenter button" behavior asked for.
+  const geolocate = new maplibregl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true,
+    showUserHeading: true,
+  });
+  // Swallow errors here on purpose: no permission / no hardware / denied
+  // must never break map init (an uncaught throw inside a 'load' listener
+  // can abort MapLibre's dispatch to listeners registered after this one).
+  geolocate.on('error', () => {});
+  map.addControl(geolocate, 'top-right');
+  map.on('load', () => {
+    try { geolocate.trigger(); } catch { /* no geolocation available - fine, control still works manually */ }
+  });
+
+  return map;
 }
 
 export function addSegmentsLayers(map, segmentsGeoJSON) {
