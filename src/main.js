@@ -220,6 +220,19 @@ function stopGpsForRide() {
   wakelock.release();
 }
 
+// Auto-downloads a full export the instant a ride ends (Get Off, or a
+// deviation prompt ending it) - during field testing this is the only copy
+// of a ride's raw fixLog, and Joker attribution (an extra async UI step
+// right after) is exactly the kind of thing that can get abandoned/
+// interrupted, so the file needs to already be safely on disk before that
+// happens, not only after it resolves. `pendingSummary` isn't in
+// completedRides yet at this point, so it's appended just for this export.
+function autoExportOnRideEnd(pendingSummary) {
+  if (!pendingSummary) return;
+  const rides = [...completedRides, { ...pendingSummary, wasJoker: pendingSummary.kind === 'joker' }];
+  downloadTransitData({ exploredSegmentIds, completedRides: rides, segmentFeatures });
+}
+
 // Shared tail end of ending a ride, whether triggered by tapping Get Off or
 // by answering a deviation prompt - resets the button and applies the
 // ride's summary (joker attribution or straight completedRides push).
@@ -278,6 +291,7 @@ async function handleDeviationPrompt(info) {
   }
   stopGpsForRide();
   const summary = rideController.resolveDeviation(choice);
+  autoExportOnRideEnd(summary);
   await applyRideSummary(summary);
 }
 
@@ -295,6 +309,7 @@ async function handleGetOn() {
     const summary = rideController.endRide(
       kind === 'normal' ? { alightingNodeId: alightingStop?.nodeId, alightingStopName: alightingStop?.name } : undefined,
     );
+    autoExportOnRideEnd(summary);
     await applyRideSummary(summary);
     return;
   }
