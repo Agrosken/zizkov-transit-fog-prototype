@@ -1,4 +1,4 @@
-import { createMap, addSegmentsLayers, addBoundaryLayer, addStopsLayer, setSegmentExplored } from './map.js';
+import { createMap, addSegmentsLayers, addBoundaryLayer, addStopsLayer, setSegmentExplored, setSegmentUnexplored } from './map.js';
 import { startTracking, stopTracking, isTracking, isSupported } from './gps.js';
 import * as wakelock from './wakelock.js';
 import { createRideController } from './ride.js';
@@ -52,11 +52,25 @@ function refreshStats() {
   lineCountEl.textContent = `${startedLines} / ${totalLines} lines started`;
 }
 
+// Returns whether the segment was NEWLY credited (false if it was already
+// explored from an earlier ride) - the direction-correction feature needs
+// this to know which segments are safe to revert: only ones genuinely
+// credited by the current ride's (wrong) assumption, never ones a rider
+// had already legitimately earned before this ride started.
 function creditSegment(segmentId) {
-  if (exploredSegmentIds.has(segmentId)) return;
+  if (exploredSegmentIds.has(segmentId)) return false;
   exploredSegmentIds.add(segmentId);
   const idx = idToIndex.get(segmentId);
   if (idx !== undefined) setSegmentExplored(map, idx);
+  refreshStats();
+  return true;
+}
+
+function uncreditSegment(segmentId) {
+  if (!exploredSegmentIds.has(segmentId)) return;
+  exploredSegmentIds.delete(segmentId);
+  const idx = idToIndex.get(segmentId);
+  if (idx !== undefined) setSegmentUnexplored(map, idx);
   refreshStats();
 }
 
@@ -304,7 +318,12 @@ async function init() {
     lineDirectionsIndex,
     segmentFeatures,
     onSegmentCredited: (segId) => {
-      creditSegment(segId);
+      const wasNew = creditSegment(segId);
+      saveStateThrottled(exploredSegmentIds, completedRides);
+      return wasNew;
+    },
+    onSegmentUncredited: (segId) => {
+      uncreditSegment(segId);
       saveStateThrottled(exploredSegmentIds, completedRides);
     },
     onStatus: setStatus,

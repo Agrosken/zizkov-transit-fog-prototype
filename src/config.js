@@ -60,6 +60,24 @@ export const NEARBY_STOPS_COUNT = 8;
 export const MIN_DIRECTION_INFERENCE_FIXES = 3;
 export const MIN_DIRECTION_INFERENCE_DURATION_S = 8;
 
+// After the fast initial estimate above, keep re-checking it against
+// every new fix for up to this long (Tom, 2026-07-23: "examined for at
+// least 5 minutes... a fast estimate can be made, but then it should
+// keep checking whether that is correct"). Segments credited under the
+// fast estimate are provisional until either the window closes or a
+// correction fires - if the accumulated evidence later favors the OTHER
+// direction by more than DIRECTION_SWITCH_MARGIN_M, the ride corrects
+// itself: already-credited segments from the wrong assumption are
+// un-credited and tracking restarts from the boarding stop in the right
+// direction.
+export const DIRECTION_CONFIRMATION_WINDOW_S = 300;
+
+// How much more (meters of cumulative closing-distance advantage) the
+// non-current candidate needs over the currently-assumed one before a
+// correction fires - a small buffer against GPS-noise-driven flip-flopping,
+// not just "whichever is ahead by any amount".
+export const DIRECTION_SWITCH_MARGIN_M = 10;
+
 export const MAP_CENTER = [14.4650, 50.0850];
 export const MAP_ZOOM = 15;
 export const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';

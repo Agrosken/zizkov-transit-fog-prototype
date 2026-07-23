@@ -15,9 +15,16 @@
 // naturally fails to credit that segment - no special-casing needed.
 
 import { filterFix, isNearDestinationStop, distanceToStop, pickLikelyDirection, buildSpatialIndex, scoreSegmentsAgainstTrace } from './matching.js';
-import { MATCH_DISTANCE_M, STOP_ARRIVAL_THRESHOLD_M, MIN_DIRECTION_INFERENCE_FIXES, MIN_DIRECTION_INFERENCE_DURATION_S } from './config.js';
+import {
+  MATCH_DISTANCE_M,
+  STOP_ARRIVAL_THRESHOLD_M,
+  MIN_DIRECTION_INFERENCE_FIXES,
+  MIN_DIRECTION_INFERENCE_DURATION_S,
+  DIRECTION_CONFIRMATION_WINDOW_S,
+  DIRECTION_SWITCH_MARGIN_M,
+} from './config.js';
 
-export function createRideController({ lineDirectionsIndex, segmentFeatures, onSegmentCredited, onStatus }) {
+export function createRideController({ lineDirectionsIndex, segmentFeatures, onSegmentCredited, onSegmentUncredited, onStatus }) {
   let activeRide = null;
   let spatialIndex = null; // built lazily, only needed for Joker matching
 
@@ -132,13 +139,45 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
         );
         const chosen = activeRide.candidates.find((c) => c.dirKey === chosenDirKey);
         if (chosen) {
+          // This is a FAST ESTIMATE, not a final answer - crediting starts
+          // right away (so short rides aren't stuck doing nothing for the
+          // next several minutes), but activeRide.inferenceFixes keeps
+          // accumulating below and gets re-checked against every new fix
+          // until DIRECTION_CONFIRMATION_WINDOW_S has elapsed, correcting
+          // itself if the fast guess turns out wrong.
           activeRide.directionLocked = true;
           activeRide.dirKey = chosen.dirKey;
           activeRide.pointer = chosen.startPointer;
-          onStatus(`Direction confirmed: toward ${lineDirectionsIndex[chosen.dirKey].orderedStops[chosen.startPointer + 1].name}.`);
+          onStatus(`Riding toward ${lineDirectionsIndex[chosen.dirKey].orderedStops[chosen.startPointer + 1].name} (initial estimate, still confirming).`);
         }
       }
       if (!activeRide.directionLocked) return;
+    } else if (activeRide.candidates.length > 1 && !activeRide.directionSettled) {
+      // Keep validating the fast estimate against every subsequent fix,
+      // using the cumulative closing-distance signal from the very first
+      // inference fix to now - a real field test showed the fast estimate
+      // can pick the wrong direction when both candidate stops are far
+      // away (the early signal is noise-sized), so this is the safety net.
+      activeRide.inferenceFixes.push(fix);
+      const elapsedSinceFirst = (fix.timestamp - activeRide.inferenceFixes[0].timestamp) / 1000;
+      if (elapsedSinceFirst >= DIRECTION_CONFIRMATION_WINDOW_S) {
+        activeRide.directionSettled = true; // stop re-checking - treat as final from here on
+      } else {
+        const scored = activeRide.candidates.map((c) => ({
+          dirKey: c.dirKey,
+          candidate: c,
+          closing: distanceToStop(activeRide.inferenceFixes[0], c.nextStop) - distanceToStop(fix, c.nextStop),
+        }));
+        const current = scored.find((s) => s.dirKey === activeRide.dirKey);
+        const best = scored.reduce((a, b) => (b.closing > a.closing ? b : a));
+        if (best.dirKey !== activeRide.dirKey && best.closing - current.closing > DIRECTION_SWITCH_MARGIN_M) {
+          for (const segId of activeRide.creditedSegmentIds) onSegmentUncredited(segId);
+          activeRide.creditedSegmentIds = [];
+          activeRide.dirKey = best.dirKey;
+          activeRide.pointer = best.candidate.startPointer;
+          onStatus(`Corrected direction - actually heading toward ${lineDirectionsIndex[best.dirKey].orderedStops[best.candidate.startPointer + 1].name}.`);
+        }
+      }
     }
 
     const dir = lineDirectionsIndex[activeRide.dirKey];
@@ -147,8 +186,12 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
     const destinationStop = dir.orderedStops[activeRide.pointer + 1];
     if (isNearDestinationStop(fix, destinationStop)) {
       const segmentId = dir.orderedSegmentIds[activeRide.pointer];
-      activeRide.creditedSegmentIds.push(segmentId);
-      onSegmentCredited(segmentId);
+      // Only track segments THIS ride newly credited - one already
+      // explored from an earlier ride must never be un-credited later if
+      // a direction correction fires; onSegmentCredited reports whether
+      // it was actually new.
+      const wasNew = onSegmentCredited(segmentId);
+      if (wasNew) activeRide.creditedSegmentIds.push(segmentId);
       onStatus(`Reached ${destinationStop.name}.`);
       activeRide.pointer++;
     }

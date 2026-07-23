@@ -107,19 +107,22 @@ export function addSegmentsLayers(map, segmentsGeoJSON) {
   });
 }
 
-// Stop markers, rendered above the line layers. Radius floors at 2px even
-// at the most zoomed-out levels (rather than shrinking toward invisible
-// the way the basemap's own POI labels do) - the field test found stops
-// impossible to see while zoomed out enough to watch a whole ride's
-// progress at a glance.
+// Stop markers, rendered above the line layers. Deliberately bounded, NOT
+// visible at every zoom level: `minzoom` cuts the whole layer off below
+// zoom 11 (city/country-wide views never render ~150 stop dots on top of
+// each other), and the radius only floors at a small-but-visible 1.5px
+// down to that same cutoff - the field test found stops disappearing
+// entirely a bit past the app's default zoom (15), which is the actual
+// gap to fix, not "visible at any zoom no matter how far out".
 export function addStopsLayer(map, stopsGeoJSON) {
   map.addSource(STOPS_SOURCE_ID, { type: 'geojson', data: stopsGeoJSON });
   map.addLayer({
     id: STOPS_LAYER_ID,
     type: 'circle',
     source: STOPS_SOURCE_ID,
+    minzoom: 11,
     paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 2, 14, 3.5, 18, 6],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 15, 3, 18, 6],
       'circle-color': '#ffffff',
       'circle-stroke-color': '#333333',
       'circle-stroke-width': 1,
@@ -141,6 +144,13 @@ export function addBoundaryLayer(map, boundaryGeoJSON) {
 
 export function setSegmentExplored(map, index) {
   map.setFeatureState({ source: SEGMENTS_SOURCE_ID, id: index }, { explored: true });
+}
+
+// Mirror of setSegmentExplored - needed for the direction-correction case:
+// segments credited under a fast-estimate direction that later turns out
+// wrong get reverted, not just left credited under the wrong assumption.
+export function setSegmentUnexplored(map, index) {
+  map.setFeatureState({ source: SEGMENTS_SOURCE_ID, id: index }, { explored: false });
 }
 
 export function updateRawTrack(map, trackPoints) {
