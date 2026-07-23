@@ -169,6 +169,23 @@ function unorderedStopPairKey(a, b) {
   return [a, b].sort().join('~');
 }
 
+// Content-derived segmentId - NOT a build-order counter. A rider's
+// exploredSegmentIds live in their browser's localStorage indefinitely,
+// long past any single build; if IDs were assigned by counting order,
+// literally any change anywhere in the citywide GTFS feed (e.g. a line
+// reverting off a temporary diversion) reshuffles every segment after it,
+// so an old id silently starts pointing at a DIFFERENT physical segment
+// on a DIFFERENT line instead of just going missing - real data corruption,
+// not just lost progress. Keying off (routeId, stop-pair, direction only
+// when not merged) is stable across rebuilds: unaffected lines keep the
+// exact same ids no matter what changed elsewhere, and a segment that
+// genuinely stops existing (e.g. the diversion-only stop pair) just
+// disappears cleanly instead of being reassigned to something else.
+function makeSegmentId({ routeId, dirId, fromNodeId, toNodeId, bidirectional }) {
+  const pairKey = unorderedStopPairKey(fromNodeId, toNodeId);
+  return bidirectional ? `R${routeId}_${pairKey}` : `R${routeId}_D${dirId}_${pairKey}`;
+}
+
 function legsAreSamePhysicalPath(legA, legB) {
   const lineA = turf.lineString(legA.coords);
   const lineB = turf.lineString(legB.coords);
@@ -206,12 +223,17 @@ for (const leg of legs) {
 const finalSegments = [];
 const legIndexToSegmentId = new Map(); // for reconstructing per-direction ordered segment sequences
 let sharedCount = 0, splitCount = 0;
-let segmentIdCounter = 0;
 
 for (const group of legGroups.values()) {
   if (group.length === 1) {
     const leg = group[0];
-    const segmentId = `S${segmentIdCounter++}`;
+    const segmentId = makeSegmentId({
+      routeId: leg.routeId,
+      dirId: leg.dirId,
+      fromNodeId: leg.fromStop.nodeId,
+      toNodeId: leg.toStop.nodeId,
+      bidirectional: false,
+    });
     finalSegments.push({
       segmentId,
       lineId: `${leg.routeId}-${leg.dirId}`,
@@ -238,7 +260,12 @@ for (const group of legGroups.values()) {
     for (let j = i + 1; j < group.length; j++) {
       if (merged[j]) continue;
       if (isMetro || legsAreSamePhysicalPath(group[i], group[j])) {
-        const segmentId = `S${segmentIdCounter++}`;
+        const segmentId = makeSegmentId({
+          routeId: group[i].routeId,
+          fromNodeId: group[i].fromStop.nodeId,
+          toNodeId: group[i].toStop.nodeId,
+          bidirectional: true,
+        });
         finalSegments.push({
           segmentId,
           lineId: group[i].routeId, // shared - not tied to one direction
@@ -255,7 +282,13 @@ for (const group of legGroups.values()) {
       }
     }
     if (!mergedWithAny && !merged[i]) {
-      const segmentId = `S${segmentIdCounter++}`;
+      const segmentId = makeSegmentId({
+        routeId: group[i].routeId,
+        dirId: group[i].dirId,
+        fromNodeId: group[i].fromStop.nodeId,
+        toNodeId: group[i].toStop.nodeId,
+        bidirectional: false,
+      });
       finalSegments.push({
         segmentId,
         lineId: `${group[i].routeId}-${group[i].dirId}`,
