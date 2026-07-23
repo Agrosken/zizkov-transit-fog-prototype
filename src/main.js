@@ -171,6 +171,26 @@ async function pickLineAtStop(stop) {
   });
 }
 
+const DEVIATION_REASONS = [
+  { value: 'detour', label: 'Still riding — just a detour', sub: 'Keep tracking, ask again if it keeps drifting' },
+  { value: 'wrong-line', label: 'Wrong line selected', sub: 'End this ride' },
+  { value: 'forgot-get-off', label: 'Forgot to press Get Off', sub: 'End this ride' },
+  { value: 'wrong-assumption', label: 'Wrong assumption by the app', sub: 'End this ride' },
+  { value: 'other', label: 'Something else', sub: 'End this ride' },
+];
+
+// Dismissing without picking (cancel) defaults to 'detour' - not answering
+// "what happened" shouldn't itself end the ride.
+async function pickDeviationReason(title) {
+  const items = DEVIATION_REASONS.map((r) => ({ value: r.value, searchText: r.label }));
+  const renderRow = (item) => {
+    const r = DEVIATION_REASONS.find((it) => it.value === item.value);
+    return `<div class="label">${r.label}</div><div class="sub">${r.sub}</div>`;
+  };
+  const choice = await showPicker(title, items, renderRow);
+  return choice ?? 'detour';
+}
+
 async function pickJokerLine(candidates) {
   if (candidates.length === 0) {
     setStatus('No matching line found for that ride.');
@@ -200,6 +220,67 @@ function stopGpsForRide() {
   wakelock.release();
 }
 
+// Shared tail end of ending a ride, whether triggered by tapping Get Off or
+// by answering a deviation prompt - resets the button and applies the
+// ride's summary (joker attribution or straight completedRides push).
+async function applyRideSummary(summary) {
+  getOnBtn.textContent = 'Get On';
+  getOnBtn.classList.remove('riding');
+
+  if (summary?.kind === 'joker') {
+    const candidates = rideController.findJokerCandidates(summary.rawTrack, exploredSegmentIds);
+    const chosen = await pickJokerLine(candidates);
+    if (chosen) {
+      for (const segId of chosen.creditableSegmentIds) creditSegment(segId);
+      completedRides.push({
+        kind: 'joker',
+        routeId: chosen.routeId,
+        routeShortName: chosen.routeShortName,
+        mode: chosen.mode,
+        startedAt: summary.startedAt,
+        endedAt: summary.endedAt,
+        creditedSegmentIds: chosen.creditableSegmentIds,
+        wasJoker: true,
+        attributedFrom: chosen.routeId,
+        boardingStopName: summary.boardingStopName,
+        rawTrack: summary.rawTrack,
+        fixLog: summary.fixLog,
+        deviationReason: summary.deviationReason,
+        // Every candidate line the trace was matched against, not just
+        // the one picked - so a "my real line didn't even show up as an
+        // option" report can actually be diagnosed from the export.
+        candidatesConsidered: candidates.map((c) => ({
+          routeId: c.routeId,
+          routeShortName: c.routeShortName,
+          newSegmentCount: c.newSegmentCount,
+        })),
+      });
+      saveStateThrottled(exploredSegmentIds, completedRides);
+      setStatus(`Attributed to ${chosen.routeShortName} (${chosen.creditableSegmentIds.length} segment(s)).`);
+    }
+  } else if (summary) {
+    completedRides.push({ ...summary, wasJoker: false });
+    saveStateThrottled(exploredSegmentIds, completedRides);
+  }
+}
+
+// Triggered by ride.js's onDeviationSuspected - the rider is asked what
+// happened; 'detour' keeps tracking, anything else ends the ride now (see
+// ride.js's resolveDeviation) with the reason stamped into its summary.
+async function handleDeviationPrompt(info) {
+  const title = info.reason === 'end-of-line'
+    ? 'Reached the end of the line — what happened?'
+    : "Doesn't look like the expected route — what happened?";
+  const choice = await pickDeviationReason(title);
+  if (choice === 'detour') {
+    rideController.resolveDeviation('detour');
+    return;
+  }
+  stopGpsForRide();
+  const summary = rideController.resolveDeviation(choice);
+  await applyRideSummary(summary);
+}
+
 async function handleGetOn() {
   if (rideController.isRiding()) {
     const kind = rideController.getRideKind();
@@ -214,43 +295,7 @@ async function handleGetOn() {
     const summary = rideController.endRide(
       kind === 'normal' ? { alightingNodeId: alightingStop?.nodeId, alightingStopName: alightingStop?.name } : undefined,
     );
-    getOnBtn.textContent = 'Get On';
-    getOnBtn.classList.remove('riding');
-
-    if (summary?.kind === 'joker') {
-      const candidates = rideController.findJokerCandidates(summary.rawTrack, exploredSegmentIds);
-      const chosen = await pickJokerLine(candidates);
-      if (chosen) {
-        for (const segId of chosen.creditableSegmentIds) creditSegment(segId);
-        completedRides.push({
-          kind: 'joker',
-          routeId: chosen.routeId,
-          routeShortName: chosen.routeShortName,
-          mode: chosen.mode,
-          startedAt: summary.startedAt,
-          endedAt: summary.endedAt,
-          creditedSegmentIds: chosen.creditableSegmentIds,
-          wasJoker: true,
-          attributedFrom: chosen.routeId,
-          boardingStopName: summary.boardingStopName,
-          rawTrack: summary.rawTrack,
-          fixLog: summary.fixLog,
-          // Every candidate line the trace was matched against, not just
-          // the one picked - so a "my real line didn't even show up as an
-          // option" report can actually be diagnosed from the export.
-          candidatesConsidered: candidates.map((c) => ({
-            routeId: c.routeId,
-            routeShortName: c.routeShortName,
-            newSegmentCount: c.newSegmentCount,
-          })),
-        });
-        saveStateThrottled(exploredSegmentIds, completedRides);
-        setStatus(`Attributed to ${chosen.routeShortName} (${chosen.creditableSegmentIds.length} segment(s)).`);
-      }
-    } else if (summary) {
-      completedRides.push({ ...summary, wasJoker: false });
-      saveStateThrottled(exploredSegmentIds, completedRides);
-    }
+    await applyRideSummary(summary);
     return;
   }
 
@@ -313,6 +358,7 @@ async function init() {
       return wasNew;
     },
     onStatus: setStatus,
+    onDeviationSuspected: handleDeviationPrompt,
   });
 
   await styleLoaded;

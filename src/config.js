@@ -59,6 +59,17 @@ export const LINE_DIRECTIONS_INDEX_URL = './data/zizkov-transit-lines-index.json
 
 export const STORAGE_KEY = 'zizkov-transit-fog-prototype-v1';
 
+// Ride-deviation detection: track the closest distance-to-target-stop seen
+// this leg, and flag it once the distance has been worse than that closest
+// point by more than this margin for several consecutive accepted fixes
+// (closest-approach-then-moving-away). No bearing/speed modeling, matching
+// this file's existing "simplest rule that works" approach - see ride.js's
+// checkDeviation. Margin is bigger than STOP_ARRIVAL_THRESHOLD_M +
+// MAX_FIX_ACCURACY_M combined so ordinary GPS noise near a stop can't
+// trigger it.
+export const DEVIATION_MARGIN_M = 200;
+export const DEVIATION_MIN_WORSENING_FIXES = 3;
+
 // Mode display order (metro-and-letters vs numbered surface modes) and
 // per-mode line width/z-order, reused by map.js and stops.js.
 export const MODE_ORDER = ['bus', 'trolleybus', 'tram', 'train', 'metro']; // layer add order (last = on top)
