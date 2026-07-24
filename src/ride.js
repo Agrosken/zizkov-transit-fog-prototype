@@ -5,16 +5,25 @@
 // boarding stop lead to two DIFFERENT next stops (they only rejoin the
 // same physical segment further along, on shared/merged bidirectional
 // street segments), and a segment only ever credits when a fix actually
-// lands near its destination stop anyway. So both candidate directions'
-// immediate next-stop are checked in parallel from boarding; whichever one
-// is actually reached first both resolves the direction AND credits that
-// first segment in the same instant - no separate inference/timing/
-// correction logic needed, and no risk of committing to the wrong one,
-// since only the real destination stop's proximity check can ever fire.
+// lands near a stop anyway. So both candidate directions are scanned in
+// parallel from boarding; whichever one is actually reached first both
+// resolves the direction AND credits segments up to that point in the same
+// instant - no separate inference/timing/correction logic needed, and no
+// risk of committing to the wrong one, since only the real direction's
+// stops can ever be reached.
 // (An earlier version inferred direction from GPS movement bearing over a
 // timed window, with a 5-minute re-validation/correction safety net - Tom
 // pointed out the whole thing was unnecessary complexity once crediting
 // already only happens on confirmed stop arrival.)
+//
+// Crediting is "reached both endpoints" based, not strict hop-by-hop: a
+// single continuous ride is physically constrained to one direction the
+// whole way through (the vehicle can't reverse mid-route except at a real
+// terminus), so once a direction is resolved, `scanForwardAndCredit` looks
+// for the FARTHEST stop reached rather than insisting on the immediate next
+// one - a detour that skips visiting an intermediate stop (diversion, GPS
+// gap) still credits every segment between the last-confirmed stop and
+// wherever was actually reached, in one pass, once that farther stop is hit.
 //
 // Joker ride: no line/stop pre-selection (for a depot move / non-listed
 // special run). On Get Off, the recorded trace is matched post-hoc
@@ -24,30 +33,49 @@
 // naturally fails to credit that segment - no special-casing needed.
 
 import { filterFix, isNearDestinationStop, distanceToStop, buildSpatialIndex, scoreSegmentsAgainstTrace } from './matching.js';
-import { MATCH_DISTANCE_M, STOP_ARRIVAL_THRESHOLD_M, DEVIATION_MARGIN_M, DEVIATION_MIN_WORSENING_FIXES } from './config.js';
+import { MATCH_DISTANCE_M, STOP_ARRIVAL_THRESHOLD_M, DEVIATION_MARGIN_M, DEVIATION_GRACE_PERIOD_S } from './config.js';
 
 function freshDeviationTracker() {
-  return { minDistanceToTarget: null, worseningFixCount: 0 };
+  return { minDistanceToTarget: null, deviatingSince: null };
 }
 
-// Closest-approach-then-moving-away check, no bearing/speed modeling: a leg
-// is "deviating" once the distance to its target stop has been worse than
-// the closest point seen so far by more than DEVIATION_MARGIN_M, for
-// DEVIATION_MIN_WORSENING_FIXES consecutive accepted fixes in a row (a
-// single noisy fix resets the streak rather than tripping it, same concern
-// the accuracy-margin fix in matching.js addressed for speed filtering).
-function checkDeviation(currentDist, tracker) {
+// Closest-approach-then-moving-away check, no bearing/speed modeling: once
+// the distance to the target stop has genuinely exceeded the closest point
+// seen so far by more than DEVIATION_MARGIN_M, a grace timer starts
+// (deviatingSince); it only fires once that margin-exceeding state has
+// persisted for DEVIATION_GRACE_PERIOD_S, not on a single noisy fix. No
+// fixed overall timeout on its own - a long segment stuck in traffic never
+// exceeds the margin in the first place, so it never starts the timer.
+function checkDeviation(currentDist, currentTimestampMs, tracker) {
   if (tracker.minDistanceToTarget === null || currentDist < tracker.minDistanceToTarget) {
     tracker.minDistanceToTarget = currentDist;
-    tracker.worseningFixCount = 0;
+    tracker.deviatingSince = null;
     return false;
   }
   if (currentDist - tracker.minDistanceToTarget > DEVIATION_MARGIN_M) {
-    tracker.worseningFixCount++;
-  } else {
-    tracker.worseningFixCount = 0;
+    if (tracker.deviatingSince === null) tracker.deviatingSince = currentTimestampMs;
+    return currentTimestampMs - tracker.deviatingSince >= DEVIATION_GRACE_PERIOD_S * 1000;
   }
-  return tracker.worseningFixCount >= DEVIATION_MIN_WORSENING_FIXES;
+  tracker.deviatingSince = null; // came back within the margin - reset the grace period
+  return false;
+}
+
+// Scans a direction's remaining stops from fromIndex forward for the
+// FARTHEST one reached by this fix (not just the immediate next one),
+// crediting every segment in between via onSegmentCredited. Returns null if
+// no stop ahead was reached this fix.
+function scanForwardAndCredit(dir, fromIndex, fix, onSegmentCredited) {
+  let matchIndex = -1;
+  for (let k = fromIndex + 1; k < dir.orderedStops.length; k++) {
+    if (isNearDestinationStop(fix, dir.orderedStops[k])) matchIndex = k;
+  }
+  if (matchIndex === -1) return null;
+  const newlyCreditedSegmentIds = [];
+  for (let i = fromIndex; i < matchIndex; i++) {
+    const segmentId = dir.orderedSegmentIds[i];
+    if (onSegmentCredited(segmentId)) newlyCreditedSegmentIds.push(segmentId);
+  }
+  return { toIndex: matchIndex, destinationStop: dir.orderedStops[matchIndex], newlyCreditedSegmentIds };
 }
 
 export function createRideController({ lineDirectionsIndex, segmentFeatures, onSegmentCredited, onStatus, onDeviationSuspected }) {
@@ -66,7 +94,7 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       const dir = lineDirectionsIndex[key];
       const pos = dir.orderedStops.findIndex((s) => s.nodeId === boardingNodeId);
       if (pos === -1 || pos >= dir.orderedStops.length - 1) continue; // not present, or it's the terminus (no onward segment)
-      candidates.push({ dirKey: key, dir, startPointer: pos, nextStop: dir.orderedStops[pos + 1], deviationTracker: freshDeviationTracker() });
+      candidates.push({ dirKey: key, dir, startIndex: pos, deviationTracker: freshDeviationTracker() });
     }
     return candidates;
   }
@@ -79,9 +107,9 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
     }
 
     // resolvedDirKey stays null while >1 candidate remains possible; each
-    // candidate tracks its own pointer (starting at the boarding stop)
-    // until one of them is actually reached, at which point the others
-    // are simply dropped - see onFix.
+    // candidate tracks its own confirmedIndex (starting at the boarding
+    // stop) until one of them is actually reached, at which point the
+    // others are simply dropped - see onFix.
     const resolved = candidates.length === 1;
     activeRide = {
       kind: 'normal',
@@ -92,8 +120,8 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       boardingStopName,
       startedAt: Date.now(),
       resolvedDirKey: resolved ? candidates[0].dirKey : null,
-      pointer: resolved ? candidates[0].startPointer : null,
-      candidates: resolved ? null : candidates.map((c) => ({ dirKey: c.dirKey, dir: c.dir, pointer: c.startPointer, deviationTracker: freshDeviationTracker() })),
+      confirmedIndex: resolved ? candidates[0].startIndex : null,
+      candidates: resolved ? null : candidates.map((c) => ({ dirKey: c.dirKey, dir: c.dir, confirmedIndex: c.startIndex, deviationTracker: freshDeviationTracker() })),
       deviationTracker: resolved ? freshDeviationTracker() : null,
       deviationPending: false,
       rawTrack: [],
@@ -103,7 +131,7 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
     };
 
     if (resolved) {
-      onStatus(`Riding ${routeShortName} toward ${lineDirectionsIndex[activeRide.resolvedDirKey].orderedStops[activeRide.pointer + 1].name}.`);
+      onStatus(`Riding ${routeShortName} toward ${lineDirectionsIndex[activeRide.resolvedDirKey].orderedStops[activeRide.confirmedIndex + 1].name}.`);
     } else {
       onStatus(`Riding ${routeShortName} - direction will confirm once the next stop is reached.`);
     }
@@ -161,22 +189,21 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
     if (activeRide.kind === 'joker') return; // no live crediting for joker rides - handled post-hoc on Get Off
 
     if (activeRide.resolvedDirKey === null) {
-      // Still ambiguous: check each candidate direction's own immediate
-      // next stop. They're genuinely different physical stops (the two
-      // directions diverge right away from the boarding point), so only
-      // the real one can ever be reached - whichever fires first both
-      // resolves the direction and credits that first segment at once.
+      // Still ambiguous: scan each candidate direction forward for the
+      // farthest stop reached. They're genuinely different physical stops
+      // right from the boarding point (the two directions diverge
+      // immediately), so only the real one can ever be reached - whichever
+      // fires first both resolves the direction and credits every segment
+      // up to that point at once.
       for (const cand of activeRide.candidates) {
-        const destinationStop = cand.dir.orderedStops[cand.pointer + 1];
-        if (!destinationStop || !isNearDestinationStop(fix, destinationStop)) continue;
+        const result = scanForwardAndCredit(cand.dir, cand.confirmedIndex, fix, onSegmentCredited);
+        if (!result) continue;
         activeRide.resolvedDirKey = cand.dirKey;
-        activeRide.pointer = cand.pointer + 1;
+        activeRide.confirmedIndex = result.toIndex;
         activeRide.candidates = null;
         activeRide.deviationTracker = freshDeviationTracker();
-        const segmentId = cand.dir.orderedSegmentIds[cand.pointer];
-        const wasNew = onSegmentCredited(segmentId);
-        if (wasNew) activeRide.creditedSegmentIds.push(segmentId);
-        onStatus(`Confirmed heading toward ${destinationStop.name}.`);
+        activeRide.creditedSegmentIds.push(...result.newlyCreditedSegmentIds);
+        onStatus(`Confirmed heading toward ${result.destinationStop.name}.`);
         return;
       }
 
@@ -186,53 +213,48 @@ export function createRideController({ lineDirectionsIndex, segmentFeatures, onS
       // itself looks wrong. Skip the check entirely while a prompt is
       // already pending an answer.
       if (!activeRide.deviationPending) {
-        let allWorsening = activeRide.candidates.length > 0;
+        let allDeviating = activeRide.candidates.length > 0;
         for (const cand of activeRide.candidates) {
-          const destinationStop = cand.dir.orderedStops[cand.pointer + 1];
-          if (!destinationStop) { allWorsening = false; continue; }
+          const destinationStop = cand.dir.orderedStops[cand.confirmedIndex + 1];
+          if (!destinationStop) { allDeviating = false; continue; }
           const dist = distanceToStop(fix, destinationStop);
-          if (!checkDeviation(dist, cand.deviationTracker)) allWorsening = false;
+          if (!checkDeviation(dist, fix.timestamp, cand.deviationTracker)) allDeviating = false;
         }
-        if (allWorsening) {
+        if (allDeviating) {
           activeRide.deviationPending = true;
-          onDeviationSuspected({ reason: 'off-route' });
+          onDeviationSuspected({ reason: 'off-route', rawTrack: activeRide.rawTrack, routeId: activeRide.routeId });
         }
       }
       return;
     }
 
     const dir = lineDirectionsIndex[activeRide.resolvedDirKey];
-    if (activeRide.pointer >= dir.orderedSegmentIds.length) {
+    if (activeRide.confirmedIndex >= dir.orderedStops.length - 1) {
       // Rode the whole tracked line and never tapped Get Off - directly the
       // "forgot to press Get Off" scenario, ask rather than silently
       // no-opping every subsequent fix.
       if (!activeRide.deviationPending) {
         activeRide.deviationPending = true;
-        onDeviationSuspected({ reason: 'end-of-line' });
+        onDeviationSuspected({ reason: 'end-of-line', rawTrack: activeRide.rawTrack, routeId: activeRide.routeId });
       }
       return;
     }
 
-    const destinationStop = dir.orderedStops[activeRide.pointer + 1];
-    if (isNearDestinationStop(fix, destinationStop)) {
-      const segmentId = dir.orderedSegmentIds[activeRide.pointer];
-      // Only track segments THIS ride newly credited - avoids double-
-      // counting toward this ride's own summary when a segment was
-      // already explored from an earlier ride; onSegmentCredited reports
-      // whether it was actually new.
-      const wasNew = onSegmentCredited(segmentId);
-      if (wasNew) activeRide.creditedSegmentIds.push(segmentId);
-      onStatus(`Reached ${destinationStop.name}.`);
-      activeRide.pointer++;
+    const result = scanForwardAndCredit(dir, activeRide.confirmedIndex, fix, onSegmentCredited);
+    if (result) {
+      activeRide.confirmedIndex = result.toIndex;
+      activeRide.creditedSegmentIds.push(...result.newlyCreditedSegmentIds);
+      onStatus(`Reached ${result.destinationStop.name}.`);
       activeRide.deviationTracker = freshDeviationTracker(); // new leg, new target
       return;
     }
 
     if (!activeRide.deviationPending) {
+      const destinationStop = dir.orderedStops[activeRide.confirmedIndex + 1];
       const dist = distanceToStop(fix, destinationStop);
-      if (checkDeviation(dist, activeRide.deviationTracker)) {
+      if (checkDeviation(dist, fix.timestamp, activeRide.deviationTracker)) {
         activeRide.deviationPending = true;
-        onDeviationSuspected({ reason: 'off-route' });
+        onDeviationSuspected({ reason: 'off-route', rawTrack: activeRide.rawTrack });
       }
     }
   }

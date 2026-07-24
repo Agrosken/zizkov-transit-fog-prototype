@@ -5,7 +5,7 @@ import { createRideController } from './ride.js';
 import { buildStopCatalog, findNearbyStops, allStopsSorted, linesServingStop, stopCatalogToGeoJSON } from './stops.js';
 import { loadState, saveStateThrottled } from './storage.js';
 import { downloadTransitData } from './export.js';
-import { LINES_URL, BOUNDARY_URL, LINE_DIRECTIONS_INDEX_URL, NEARBY_STOPS_COUNT } from './config.js';
+import { LINES_URL, BOUNDARY_URL, LINE_DIRECTIONS_INDEX_URL, NEARBY_STOPS_COUNT, MIN_SWITCH_CANDIDATE_SEGMENTS } from './config.js';
 
 const getOnBtn = document.getElementById('get-on-btn');
 const exportBtn = document.getElementById('export-btn');
@@ -180,11 +180,13 @@ const DEVIATION_REASONS = [
 ];
 
 // Dismissing without picking (cancel) defaults to 'detour' - not answering
-// "what happened" shouldn't itself end the ride.
-async function pickDeviationReason(title) {
-  const items = DEVIATION_REASONS.map((r) => ({ value: r.value, searchText: r.label }));
+// "what happened" shouldn't itself end the ride. `extraOption` (a dynamic
+// "this looks like line X instead" suggestion) is prepended when present.
+async function pickDeviationReason(title, extraOption) {
+  const reasons = extraOption ? [extraOption, ...DEVIATION_REASONS] : DEVIATION_REASONS;
+  const items = reasons.map((r) => ({ value: r.value, searchText: r.label }));
   const renderRow = (item) => {
-    const r = DEVIATION_REASONS.find((it) => it.value === item.value);
+    const r = reasons.find((it) => it.value === item.value);
     return `<div class="label">${r.label}</div><div class="sub">${r.sub}</div>`;
   };
   const choice = await showPicker(title, items, renderRow);
@@ -235,10 +237,27 @@ function autoExportOnRideEnd(pendingSummary) {
 
 // Shared tail end of ending a ride, whether triggered by tapping Get Off or
 // by answering a deviation prompt - resets the button and applies the
-// ride's summary (joker attribution or straight completedRides push).
-async function applyRideSummary(summary) {
+// ride's summary (joker attribution, a pre-chosen "switch to line X"
+// candidate from the deviation prompt, or a straight completedRides push).
+async function applyRideSummary(summary, preChosenCandidate) {
   getOnBtn.textContent = 'Get On';
   getOnBtn.classList.remove('riding');
+
+  if (preChosenCandidate) {
+    // The deviation prompt already surfaced and the rider already confirmed
+    // this match (via findJokerCandidates, same as Joker rides use) - credit
+    // it directly rather than re-asking through the Joker line-picker.
+    for (const segId of preChosenCandidate.creditableSegmentIds) creditSegment(segId);
+    completedRides.push({
+      ...summary,
+      wasJoker: false,
+      attributedFrom: preChosenCandidate.routeId,
+      creditedSegmentIds: preChosenCandidate.creditableSegmentIds,
+    });
+    saveStateThrottled(exploredSegmentIds, completedRides);
+    setStatus(`Switched to ${preChosenCandidate.routeShortName} (${preChosenCandidate.creditableSegmentIds.length} segment(s)).`);
+    return;
+  }
 
   if (summary?.kind === 'joker') {
     const candidates = rideController.findJokerCandidates(summary.rawTrack, exploredSegmentIds);
@@ -284,7 +303,27 @@ async function handleDeviationPrompt(info) {
   const title = info.reason === 'end-of-line'
     ? 'Reached the end of the line — what happened?'
     : "Doesn't look like the expected route — what happened?";
-  const choice = await pickDeviationReason(title);
+
+  // Reuse the Joker trace-matching machinery (same rideController method
+  // Joker rides already use) to check whether the trace so far actually
+  // fits a DIFFERENT real line better than the one currently selected -
+  // only for the off-route case, since end-of-line already has a known,
+  // correct line/direction with nothing to second-guess.
+  let switchCandidate = null;
+  if (info.reason === 'off-route' && info.rawTrack?.length) {
+    const candidates = rideController.findJokerCandidates(info.rawTrack, exploredSegmentIds)
+      .filter((c) => c.routeId !== info.routeId);
+    if (candidates[0] && candidates[0].creditableSegmentIds.length >= MIN_SWITCH_CANDIDATE_SEGMENTS) {
+      switchCandidate = candidates[0];
+    }
+  }
+  const extraOption = switchCandidate ? {
+    value: `switch:${switchCandidate.routeId}`,
+    label: `Actually, this looks like line ${switchCandidate.routeShortName} — switch to it`,
+    sub: `End this ride, credit it to ${switchCandidate.routeShortName} instead (${switchCandidate.creditableSegmentIds.length} segment(s))`,
+  } : null;
+
+  const choice = await pickDeviationReason(title, extraOption);
   if (choice === 'detour') {
     rideController.resolveDeviation('detour');
     return;
@@ -292,7 +331,7 @@ async function handleDeviationPrompt(info) {
   stopGpsForRide();
   const summary = rideController.resolveDeviation(choice);
   autoExportOnRideEnd(summary);
-  await applyRideSummary(summary);
+  await applyRideSummary(summary, choice.startsWith('switch:') ? switchCandidate : undefined);
 }
 
 async function handleGetOn() {

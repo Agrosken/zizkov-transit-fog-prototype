@@ -60,15 +60,23 @@ export const LINE_DIRECTIONS_INDEX_URL = './data/zizkov-transit-lines-index.json
 export const STORAGE_KEY = 'zizkov-transit-fog-prototype-v1';
 
 // Ride-deviation detection: track the closest distance-to-target-stop seen
-// this leg, and flag it once the distance has been worse than that closest
-// point by more than this margin for several consecutive accepted fixes
-// (closest-approach-then-moving-away). No bearing/speed modeling, matching
-// this file's existing "simplest rule that works" approach - see ride.js's
-// checkDeviation. Margin is bigger than STOP_ARRIVAL_THRESHOLD_M +
-// MAX_FIX_ACCURACY_M combined so ordinary GPS noise near a stop can't
-// trigger it.
+// this leg; once the distance has genuinely exceeded that closest point by
+// more than this margin (closest-approach-then-moving-away, no bearing/
+// speed modeling), a short grace timer starts - if the fix doesn't come
+// back within the margin before DEVIATION_GRACE_PERIOD_S elapses, that's a
+// real deviation. No fixed overall time limit is used on its own (a long
+// segment stuck in traffic must never trip this) - only elapsed time AFTER
+// a genuine margin-exceeding deviation is already confirmed. Margin is
+// bigger than STOP_ARRIVAL_THRESHOLD_M + MAX_FIX_ACCURACY_M combined so
+// ordinary GPS noise near a stop can't trigger it. See ride.js's
+// checkDeviation.
 export const DEVIATION_MARGIN_M = 200;
-export const DEVIATION_MIN_WORSENING_FIXES = 3;
+export const DEVIATION_GRACE_PERIOD_S = 60;
+
+// Floor for suggesting a "this looks like line X instead - switch?" option
+// on the deviation prompt (see ride.js's findJokerCandidates reuse in
+// main.js) - avoids suggesting a switch off a too-short/noisy partial trace.
+export const MIN_SWITCH_CANDIDATE_SEGMENTS = 2;
 
 // Mode display order (metro-and-letters vs numbered surface modes) and
 // per-mode line width/z-order, reused by map.js and stops.js.
