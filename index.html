@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <title>Žižkov Transit Fog Prototype</title>
+    <script type="module" crossorigin src="/zizkov-transit-fog-prototype/assets/index-C1fr054i.js"></script>
+    <link rel="stylesheet" crossorigin href="/zizkov-transit-fog-prototype/assets/index-C9wR1_sG.css">
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <div id="overlay">
+      <div id="stats">
+        <div id="distance">0.00 km explored</div>
+        <div id="line-count">0 / 0 lines started</div>
+      </div>
+      <div id="buttons">
+        <button id="get-on-btn">Get On</button>
+        <button id="export-btn">Export</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+      <div id="status"></div>
+    </div>
+
+    <div id="picker-backdrop" class="hidden">
+      <div id="picker-panel">
+        <div id="picker-title"></div>
+        <input id="picker-filter" type="text" placeholder="Filter..." />
+        <div id="picker-list"></div>
+        <button id="picker-cancel">Cancel</button>
+      </div>
+    </div>
+
+  </body>
+</html>

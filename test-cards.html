@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Test Cards — Žižkov Transit Fog</title>
+<style>
+  :root {
+    --bg: #eef2f0;
+    --paper: #ffffff;
+    --ink: #16211c;
+    --ink-soft: #46564e;
+    --line: #ccd6d1;
+    --accent: #c97f1f;
+    --accent-ink: #5a3a0f;
+    --teal: #2f5d56;
+    --teal-soft: #dce9e5;
+    --warn: #a83e2c;
+    --warn-soft: #f6e3de;
+    --done: #3f7a5c;
+    --done-soft: #dcefe3;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10160f;
+      --paper: #182018;
+      --ink: #e9efec;
+      --ink-soft: #a9b8b0;
+      --line: #34423b;
+      --accent: #e0a13c;
+      --accent-ink: #ffe4b3;
+      --teal: #7fb3a8;
+      --teal-soft: #1e2e2a;
+      --warn: #e2725c;
+      --warn-soft: #3a201b;
+      --done: #6fcb97;
+      --done-soft: #17281f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --paper: #182018; --ink: #e9efec; --ink-soft: #a9b8b0;
+    --line: #34423b; --accent: #e0a13c; --accent-ink: #ffe4b3; --teal: #7fb3a8;
+    --teal-soft: #1e2e2a; --warn: #e2725c; --warn-soft: #3a201b; --done: #6fcb97; --done-soft: #17281f;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef2f0; --paper: #ffffff; --ink: #16211c; --ink-soft: #46564e;
+    --line: #ccd6d1; --accent: #c97f1f; --accent-ink: #5a3a0f; --teal: #2f5d56;
+    --teal-soft: #dce9e5; --warn: #a83e2c; --warn-soft: #f6e3de; --done: #3f7a5c; --done-soft: #dcefe3;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 0 4rem; }
+
+  header.top {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg);
+    padding: 1.1rem 1.1rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;
+    color: var(--teal); margin: 0 0 0.3rem;
+  }
+  h1 {
+    font-size: 1.35rem; line-height: 1.2; margin: 0 0 0.7rem; text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .progress-row { display: flex; align-items: center; gap: 0.6rem; }
+  .progress-track {
+    flex: 1; height: 7px; border-radius: 99px; background: var(--line); overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); border-radius: 99px; width: 0%;
+    transition: width 0.35s ease;
+  }
+  .progress-count {
+    font-variant-numeric: tabular-nums; font-size: 0.82rem; color: var(--ink-soft);
+    white-space: nowrap; min-width: 3.4em; text-align: right;
+  }
+  .export-btn {
+    margin-top: 0.7rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font: inherit; font-size: 0.8rem; font-weight: 700;
+    color: var(--accent-ink); background: var(--teal-soft);
+    border: 1px solid transparent; border-radius: 7px;
+    cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); }
+  .export-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .intro {
+    margin: 0.9rem 1.1rem 0.4rem; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.5;
+  }
+  .intro strong { color: var(--ink); }
+
+  main { padding: 0.6rem 1.1rem 0; display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card.card-done { opacity: 0.72; }
+
+  .card-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem;
+    padding: 0.95rem 1rem 0.85rem;
+  }
+  .card-head-text { min-width: 0; }
+  .card-num {
+    font-variant-numeric: tabular-nums; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; color: var(--accent-ink); background: var(--teal-soft);
+    display: inline-block; padding: 0.1rem 0.45rem; border-radius: 5px; margin-bottom: 0.4rem;
+  }
+  .card-title { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.15rem; text-wrap: balance; }
+  .card-covers { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
+
+  .stops-badge {
+    flex-shrink: 0; text-align: center; background: var(--teal-soft); border-radius: 8px;
+    padding: 0.4rem 0.6rem; min-width: 4.4em;
+  }
+  .stops-num {
+    font-variant-numeric: tabular-nums; font-size: 1.3rem; font-weight: 800; color: var(--teal); line-height: 1;
+    display: block;
+  }
+  .stops-label {
+    font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft);
+    display: block; margin-top: 0.15rem;
+  }
+
+  .perf {
+    height: 1px; margin: 0 1rem;
+    background-image: repeating-linear-gradient(to right, var(--line) 0 6px, transparent 6px 12px);
+  }
+
+  .steps { list-style: none; margin: 0; padding: 0.85rem 1rem 0.3rem; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    display: flex; gap: 0.6rem; align-items: baseline;
+    font-size: 0.9rem; line-height: 1.45; padding: 0.3rem 0;
+  }
+  .steps li::before {
+    content: counter(step);
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 0.76rem;
+    color: var(--teal); background: var(--teal-soft);
+    width: 1.35em; height: 1.35em; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transform: translateY(0.15em);
+  }
+  /* The raw text inside each <li> becomes an unstyleable anonymous flex
+     item (only ::before is an explicit one) - wrapping it in .step-text
+     lets it actually get flex:1/min-width:0, fixing overflow around bold
+     button labels/quoted instructions. */
+  .steps .step-text { flex: 1 1 auto; min-width: 0; }
+
+  .confirm {
+    margin: 0.3rem 1rem 1rem; padding: 0.7rem 0.8rem;
+    background: var(--done-soft); border-radius: 8px; font-size: 0.85rem; line-height: 1.5;
+  }
+  .confirm b { color: var(--done); }
+
+  .note {
+    margin: 0 1rem 1rem; padding: 0.65rem 0.8rem;
+    background: var(--warn-soft); border-radius: 8px; font-size: 0.82rem; line-height: 1.5;
+    color: var(--ink);
+  }
+  .note b { color: var(--warn); }
+
+  .check-row {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    margin: 0.2rem 1rem 1rem;
+    padding: 0.7rem 0.85rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .check-toggle {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; user-select: none; white-space: nowrap; flex-shrink: 0;
+  }
+  .check-toggle input {
+    width: 1.15rem; height: 1.15rem; accent-color: var(--done); flex-shrink: 0;
+  }
+  .check-toggle:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .card-done .check-row { background: var(--done-soft); border-color: var(--done); }
+  /* A text input as a flex sibling needs flex:1/min-width:0 explicitly -
+     same anonymous-flex-item overflow trap fixed elsewhere on this page -
+     otherwise it refuses to shrink below its default intrinsic width on
+     narrow phone screens. */
+  .note-input {
+    flex: 1 1 12em; min-width: 0;
+    padding: 0.45rem 0.6rem;
+    font: inherit; font-size: 0.85rem;
+    color: var(--ink); background: var(--paper);
+    border: 1px solid var(--line); border-radius: 6px;
+  }
+  .note-input::placeholder { color: var(--ink-soft); }
+  .note-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  footer {
+    margin: 1.4rem 1.1rem 0; padding-top: 1rem; border-top: 1px solid var(--line);
+    font-size: 0.78rem; color: var(--ink-soft); line-height: 1.6;
+  }
+  footer code {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.85em;
+    background: var(--teal-soft); padding: 0.05em 0.35em; border-radius: 4px;
+  }
+
+  .itinerary {
+    margin: 0.2rem 1.1rem 1.3rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem 0.95rem;
+  }
+  .itinerary-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem;
+    margin-bottom: 0.7rem;
+  }
+  .itinerary-title { font-size: 0.95rem; font-weight: 700; margin: 0; }
+  .itinerary-sub { font-size: 0.74rem; color: var(--ink-soft); }
+  .tl { list-style: none; margin: 0; padding: 0; }
+  .tl li {
+    position: relative; display: flex; gap: 0.7rem; padding: 0 0 0.85rem 0;
+  }
+  .tl li:last-child { padding-bottom: 0; }
+  .tl .rail {
+    flex-shrink: 0; width: 0.55rem; display: flex; flex-direction: column; align-items: center;
+  }
+  .tl .dot {
+    width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--teal); margin-top: 0.3rem;
+  }
+  .tl li.milestone .dot { background: var(--accent); width: 0.7rem; height: 0.7rem; margin-top: 0.22rem; }
+  .tl .wire { flex: 1; width: 2px; background: var(--line); margin-top: 0.15rem; }
+  .tl li:last-child .wire { display: none; }
+  .tl .time {
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 0.82rem;
+    color: var(--teal); min-width: 3.4em; flex-shrink: 0;
+  }
+  .tl li.milestone .time { color: var(--accent-ink); }
+  .tl .what {
+    font-size: 0.85rem; line-height: 1.4;
+    flex: 1 1 auto; min-width: 0;
+  }
+  .tl .what b { font-weight: 700; }
+  .tl .tag {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em; color: var(--accent-ink);
+    background: var(--teal-soft); border-radius: 4px; padding: 0.02rem 0.35rem; margin-left: 0.3rem;
+    white-space: nowrap; display: inline-block;
+  }
+  /* Reality vs in-app distinction, reused in the timeline and every card:
+     teal = something you physically do, amber = something you tap/select
+     in the app. Icon + text label together, never icon alone. */
+  .tl .what.real b, .tl .what.real .lead { color: var(--teal); }
+  .tl .what.appstep b, .tl .what.appstep .lead { color: var(--accent-ink); }
+  .lead { font-weight: 700; }
+
+  .leg-head {
+    margin: 0 1.1rem 0.5rem; display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem;
+  }
+  .leg-head h2 { font-size: 1.05rem; margin: 0; min-width: 0; }
+  .leg-head span { font-size: 0.78rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  .facts {
+    margin: 0 1rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .fact {
+    display: flex; align-items: baseline; gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.86rem;
+  }
+  .fact:last-child { border-bottom: none; }
+  .fact dt {
+    flex: 0 0 8.2em; min-width: 0;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .fact dd { margin: 0; flex: 1 1 auto; min-width: 0; font-weight: 700; }
+  .fact.real { background: color-mix(in srgb, var(--teal) 7%, var(--paper)); }
+  .fact.real dt { color: var(--teal); }
+  .fact.app { background: color-mix(in srgb, var(--accent) 9%, var(--paper)); }
+  .fact.app dt { color: var(--accent-ink); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Žižkov Transit Fog · Field Test — Round 6</p>
+    <h1>Today's route: Chmelnice → Nákladové nádraží Žižkov → Hlavní nádraží</h1>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+      <span class="progress-count" id="count">0 / 5</span>
+    </div>
+    <button type="button" id="export-results-btn" class="export-btn">⬇ Export test results</button>
+  </header>
+
+  <p class="intro">
+    Riding the same corridor as before, but backwards and starting from Chmelnice — which opens up two
+    genuine real-line divergence points along the way instead of needing a virtual reboard trick for
+    both. <strong>Card 1</strong>: line 31 also serves Chmelnice but splits off after Ohrada (Krejcárek,
+    not Biskupcova) — so this time boarding wrong from the very start actually works. <strong>Card 2</strong>:
+    line 11 splits off right after Nákladové nádraží Žižkov (Mezi Hřbitovy, not Olšanská) — a virtual
+    reboard there, same trick as last round. Both are priority — they re-confirm the deviation-detection
+    rewrite and the new "different line" button from last round, on two different divergence shapes.
+    Cards 3–4 are quick regression checks, Card 5 is a free bonus. Every line is tagged
+    <b class="lead" style="color:var(--teal)">🚋 real</b> (something you physically do) or
+    <b class="lead" style="color:var(--accent-ink)">📱 app</b> (something you tap/select on screen).
+  </p>
+
+  <div class="itinerary">
+    <div class="itinerary-head">
+      <p class="itinerary-title">Your route, with tests woven in</p>
+      <p class="itinerary-sub">order matters, times don't</p>
+    </div>
+    <ol class="tl">
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">start</span><span class="what real"><span class="lead">🚋 Board:</span> tram 9 at Chmelnice, toward Hlavní nádraží.</span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">then</span><span class="what appstep"><span class="lead">📱 Select:</span> tram <b>31</b> in the app instead — deliberately wrong, right from the start.<span class="tag">CARD 1</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">Strážní → Vozovna Žižkov → Ohrada</span><span class="what real"><span class="lead">🚋 Keep riding:</span> the real tram 9 normally — tram 31 shares this whole stretch, nothing looks wrong yet.</span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">past Ohrada</span><span class="what appstep"><span class="lead">📱 Prompt:</span> tram 31 expects Krejcárek, real tram continues to Biskupcova — tap "I'm actually on a different line", pick 9.<span class="tag">CARD 1</span></span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">during</span><span class="what real"><span class="lead">👀 Watch:</span> the blue position dot and camera the whole outing.<span class="tag">CARD 3</span></span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">at Nákladové nádraží Žižkov</span><span class="what appstep"><span class="lead">📱 Get Off:</span> tap it, pick that stop — WITHOUT actually leaving the tram.<span class="tag">CARD 2</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">immediately</span><span class="what appstep"><span class="lead">📱 Get On:</span> same stop, select tram <b>11</b> instead — deliberately wrong.</span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">stay on tram 9</span><span class="what real"><span class="lead">🚋 Keep riding:</span> the real tram continues toward Olšanská — don't touch the app.</span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">right after Nákladové</span><span class="what appstep"><span class="lead">📱 Prompt:</span> tram 11 expects Mezi Hřbitovy, real tram goes to Olšanská — tap "I'm actually on a different line", pick 9.<span class="tag">CARD 2</span></span></li>
+      <li><div class="rail"><div class="dot"></div></div><span class="time">whenever convenient</span><span class="what real"><span class="lead">👀 Watch:</span> status messages (card 4); and whether the already-ridden stretch from the last outing lights up as already-explored rather than new (card 5, bonus).</span></li>
+    </ol>
+  </div>
+
+  <main>
+
+    <section class="card" id="card-1">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Priority</span>
+          <h2 class="card-title">Board wrong from the start — divergence after Ohrada</h2>
+          <p class="card-covers">
+            Covers the deviation-detection rewrite on a WIDE divergence: tram 31 shares Chmelnice → Strážní
+            → Vozovna Žižkov → Ohrada with your real tram 9, then splits to Krejcárek while 9 continues to
+            Biskupcova. No virtual reboard trick needed — 31 is a real, plausible-looking wrong choice
+            right from boarding.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">3+</span><span class="stops-label">stops</span></div>
+      </div>
+      <dl class="facts">
+        <div class="fact real"><dt>🚋 Board</dt><dd>Tram 9 at Chmelnice, toward Hlavní nádraží</dd></div>
+        <div class="fact app"><dt>📱 In the app</dt><dd>Select tram 31 instead — deliberately wrong, right away</dd></div>
+        <div class="fact real"><dt>🚋 Keep riding</dt><dd>Strážní → Vozovna Žižkov → Ohrada, normally</dd></div>
+        <div class="fact app"><dt>📱 When prompted</dt><dd>Tap "I'm actually on a different line", then pick line 9</dd></div>
+      </dl>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">Board your real tram 9 at Chmelnice as usual, but in the app select tram <b>31</b> instead — deliberately wrong. It's a real line at this stop too, so nothing looks off yet.</span></li>
+        <li><span class="step-text">Keep riding normally through Strážní, Vozovna Žižkov, and Ohrada — tram 31 shares this exact stretch with 9, so no prompt should appear yet.</span></li>
+        <li><span class="step-text">Past Ohrada, your real tram continues toward Biskupcova, but tram 31 (what you selected) expects Krejcárek instead — that's the divergence. The prompt should fire within roughly 15-30 seconds of that split.</span></li>
+        <li><span class="step-text">Tap <b>"I'm actually on a different line"</b> — check the follow-up list includes 9 (likely alongside 5/11/98, since they all still match the real path this far), and that tram 31 itself never appears in it.</span></li>
+        <li><span class="step-text">Pick line 9 from that list, then keep riding at least one more stop without touching the app — check a NEW segment lights up, proving tracking resumed rather than a one-time credit.</span></li>
+      </ol>
+      <div class="confirm">
+        <b>Confirm:</b> the prompt fired within ~15-30s of passing Ohrada (not late, not silent), the list
+        included more than one real candidate, tram 31 wasn't among them, and tracking visibly continued
+        afterward without the ride ending.
+      </div>
+      <div class="check-row">
+        <label class="check-toggle"><input type="checkbox" data-card="1"> Done</label>
+        <input type="text" class="note-input" data-card="1" placeholder="Any issue? (optional)">
+      </div>
+    </section>
+
+    <section class="card" id="card-2">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Priority</span>
+          <h2 class="card-title">Virtual reboard — quick divergence after Nákladové nádraží Žižkov</h2>
+          <p class="card-covers">
+            Covers the same rewrite on a TIGHT divergence, right after where Card 1 already switched you
+            back: tram 11 splits off to Mezi Hřbitovy immediately after Nákladové nádraží Žižkov, while 9
+            continues to Olšanská — a good test that the ~15s grace period reacts promptly even with no
+            shared stretch to speak of.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">1</span><span class="stops-label">stop</span></div>
+      </div>
+      <dl class="facts">
+        <div class="fact real"><dt>🚋 Stay on</dt><dd>Same tram 9 — never actually get off</dd></div>
+        <div class="fact app"><dt>📱 At Nákladové nádraží Žižkov</dt><dd>Tap Get Off, pick that stop (virtual alighting only)</dd></div>
+        <div class="fact app"><dt>📱 Immediately after</dt><dd>Tap Get On, same stop, select tram 11 — deliberately wrong</dd></div>
+        <div class="fact app"><dt>📱 When prompted</dt><dd>Tap "I'm actually on a different line", then pick line 9</dd></div>
+      </dl>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">By the time you reach Nákladové nádraží Žižkov you should already be back on tram 9 correctly (from Card 1). WITHOUT actually leaving the tram, tap Get Off in the app and pick this stop as if you'd alighted.</span></li>
+        <li><span class="step-text">Immediately tap Get On again, same stop, but select tram <b>11</b> instead — deliberately wrong.</span></li>
+        <li><span class="step-text">Keep riding the real tram 9 — don't touch the app. Tram 11 expects Mezi Hřbitovy next, but your real tram goes to Olšanská instead — the divergence happens almost immediately here, unlike Card 1's longer shared stretch.</span></li>
+        <li><span class="step-text">When the prompt appears, tap "I'm actually on a different line" — check the list this time is TIGHTER, likely just 9 (and maybe 5), since 11/98 both went the Mezi Hřbitovy way and no longer match your real path at all.</span></li>
+        <li><span class="step-text">Pick line 9, keep riding, confirm tracking resumes.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> the prompt still fires promptly on this much shorter divergence, the candidate list is appropriately narrower than Card 1's, and switching still resumes tracking correctly.</div>
+      <div class="check-row">
+        <label class="check-toggle"><input type="checkbox" data-card="2"> Done</label>
+        <input type="text" class="note-input" data-card="2" placeholder="Any issue? (optional)">
+      </div>
+    </section>
+
+    <section class="card" id="card-3">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Check</span>
+          <h2 class="card-title">Position dot always visible, no duplicate, camera behaves</h2>
+          <p class="card-covers">
+            Re-check from last round: the dot updates continuously even before boarding, no duplicate dot
+            from the Locate button, and manual panning isn't overridden by auto-follow.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">whole outing</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">Before boarding, just open the app and watch: the blue dot should already be there and moving as you walk, without tapping Locate or Get On.</span></li>
+        <li><span class="step-text">Tap the Locate button once before boarding, then board and start the ride — check there's only ONE dot the whole time, not two.</span></li>
+        <li><span class="step-text">Mid-ride, manually drag/pan the map to look around — check the camera stays where you left it instead of snapping back on the next fix. Tap Locate to recenter — check it resumes following from there.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> one dot, always live; manual panning is respected until you tap Locate again; no label flicker.</div>
+      <div class="check-row">
+        <label class="check-toggle"><input type="checkbox" data-card="3"> Done</label>
+        <input type="text" class="note-input" data-card="3" placeholder="Any issue? (optional)">
+      </div>
+    </section>
+
+    <section class="card" id="card-4">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Check</span>
+          <h2 class="card-title">Status line stays readable, says whether a segment was new</h2>
+          <p class="card-covers">Re-check from last round: messages stay up long enough, and now say whether a credited stop was newly explored or already-explored.</p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">any ride</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">During any ride, watch for the status message each time a stop credits or a fix gets skipped.</span></li>
+        <li><span class="step-text">When a stop credits, check the message distinguishes "New segment explored!" from "(already explored)" — most of this corridor was ridden last round, so you should see plenty of the latter.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> messages are noticeable and stay up a few seconds before clearing; new-vs-already-explored wording shows up correctly.</div>
+      <div class="check-row">
+        <label class="check-toggle"><input type="checkbox" data-card="4"> Done</label>
+        <input type="text" class="note-input" data-card="4" placeholder="Any issue? (optional)">
+      </div>
+    </section>
+
+    <section class="card" id="card-5">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Check (free)</span>
+          <h2 class="card-title">Riding the same corridor backwards doesn't double-count</h2>
+          <p class="card-covers">
+            Covers: this whole route retraces last round's Hlavní nádraží → Spojovací corridor in reverse.
+            Genuinely shared (bidirectional) segments should already show explored from last time; only a
+            truly divided one-way stretch, if one exists here, should light up as newly explored now.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">whole outing</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">No special action needed — just glance at the map as you retrace the route. Most of it should already be colored in from last round's ride, not grey.</span></li>
+        <li><span class="step-text">Note if anything unexpectedly re-lights as "new" — that could mean the app isn't correctly sharing credit across both directions of the same physical segment.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> the already-ridden stretch stays lit; nothing you've already explored gets flagged as newly explored again unless it's a genuinely separate one-way segment.</div>
+      <div class="check-row">
+        <label class="check-toggle"><input type="checkbox" data-card="5"> Done</label>
+        <input type="text" class="note-input" data-card="5" placeholder="Any issue? (optional)">
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    Every ride's Get Off (or an ended deviation prompt) auto-downloads a full export once all of that ride's
+    interactions are finished — no need to remember the Export button. Checkmarks below are saved on this
+    device only, just for your own tracking across the outings.
+  </footer>
+</div>
+
+<script>
+  const STORAGE_KEY = 'zizkov-field-test-progress-v5'; // bumped for Round 6 - fresh route/cards, Round 5 treated as finished (archived at test-cards-round5.html)
+  const boxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+  const noteInputs = Array.from(document.querySelectorAll('.note-input'));
+  const fill = document.getElementById('fill');
+  const count = document.getElementById('count');
+  const exportBtn = document.getElementById('export-results-btn');
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+  }
+  function save(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  // Earlier versions stored `state[key]` as a plain boolean (done only, no
+  // note) - normalize on read so old saved progress isn't lost when this
+  // page is reopened after the notes feature was added.
+  function entryFor(state, key) {
+    const raw = state[key];
+    if (raw && typeof raw === 'object') return raw;
+    return { done: !!raw, note: '' };
+  }
+
+  function refresh() {
+    const done = boxes.filter((b) => b.checked).length;
+    count.textContent = done + ' / ' + boxes.length;
+    fill.style.width = (done / boxes.length * 100) + '%';
+    boxes.forEach((b) => {
+      const card = b.closest('.card');
+      card.classList.toggle('card-done', b.checked);
+    });
+  }
+
+  const state = load();
+  boxes.forEach((b) => {
+    const key = b.dataset.card;
+    const entry = entryFor(state, key);
+    b.checked = entry.done;
+    b.addEventListener('change', () => {
+      const s = load();
+      s[key] = { ...entryFor(s, key), done: b.checked };
+      save(s);
+      refresh();
+    });
+  });
+  noteInputs.forEach((input) => {
+    const key = input.dataset.card;
+    const entry = entryFor(state, key);
+    input.value = entry.note;
+    input.addEventListener('input', () => {
+      const s = load();
+      s[key] = { ...entryFor(s, key), note: input.value };
+      save(s);
+    });
+  });
+  refresh();
+
+  exportBtn.addEventListener('click', () => {
+    const s = load();
+    const results = boxes.map((b) => {
+      const key = b.dataset.card;
+      const entry = entryFor(s, key);
+      const card = b.closest('.card');
+      return {
+        card: Number(key),
+        title: card.querySelector('.card-title')?.textContent.trim() ?? '',
+        done: entry.done,
+        note: entry.note || '',
+      };
+    });
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      totalCards: boxes.length,
+      cardsDone: results.filter((r) => r.done).length,
+      cardsWithIssues: results.filter((r) => r.note.trim().length > 0).length,
+      results,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.href = url;
+    a.download = `zizkov-field-test-results-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+</script>
+</body>
+</html>
