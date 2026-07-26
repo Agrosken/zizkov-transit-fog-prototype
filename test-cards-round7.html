@@ -65,6 +65,15 @@
     padding: 1.1rem 1.1rem 0.9rem;
     border-bottom: 1px solid var(--line);
   }
+  .round-nav {
+    display: flex; gap: 0.5rem; margin-bottom: 0.5rem;
+  }
+  .round-nav a {
+    font-size: 0.74rem; font-weight: 700; text-decoration: none;
+    color: var(--ink-soft); background: var(--teal-soft);
+    padding: 0.22rem 0.55rem; border-radius: 99px;
+  }
+  .round-nav a.current { color: var(--accent-ink); background: var(--paper); border: 1px solid var(--accent); }
   .eyebrow {
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;
     color: var(--teal); margin: 0 0 0.3rem;
@@ -157,10 +166,6 @@
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0; transform: translateY(0.15em);
   }
-  /* The raw text inside each <li> becomes an unstyleable anonymous flex
-     item (only ::before is an explicit one) - wrapping it in .step-text
-     lets it actually get flex:1/min-width:0, fixing overflow around bold
-     button labels/quoted instructions. */
   .steps .step-text { flex: 1 1 auto; min-width: 0; }
 
   .confirm {
@@ -194,10 +199,6 @@
   }
   .check-toggle:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .card-done .check-row { background: var(--done-soft); border-color: var(--done); }
-  /* A text input as a flex sibling needs flex:1/min-width:0 explicitly -
-     same anonymous-flex-item overflow trap fixed elsewhere on this page -
-     otherwise it refuses to shrink below its default intrinsic width on
-     narrow phone screens. */
   .note-input {
     flex: 1 1 12em; min-width: 0;
     padding: 0.45rem 0.6rem;
@@ -259,9 +260,6 @@
     background: var(--teal-soft); border-radius: 4px; padding: 0.02rem 0.35rem; margin-left: 0.3rem;
     white-space: nowrap; display: inline-block;
   }
-  /* Reality vs in-app distinction, reused in the timeline and every card:
-     teal = something you physically do, amber = something you tap/select
-     in the app. Icon + text label together, never icon alone. */
   .tl .what.real b, .tl .what.real .lead { color: var(--teal); }
   .tl .what.appstep b, .tl .what.appstep .lead { color: var(--accent-ink); }
   .lead { font-weight: 700; }
@@ -301,12 +299,12 @@
 
 <div class="wrap">
   <header class="top">
-    <nav style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-      <a href="./test-cards.html" style="font-size:0.74rem;font-weight:700;text-decoration:none;color:var(--accent-ink);background:var(--paper);border:1px solid var(--accent);padding:0.22rem 0.55rem;border-radius:99px;">Round 6</a>
-      <a href="./test-cards-round7.html" style="font-size:0.74rem;font-weight:700;text-decoration:none;color:var(--ink-soft);background:var(--teal-soft);padding:0.22rem 0.55rem;border-radius:99px;">Round 7</a>
+    <nav class="round-nav">
+      <a href="./test-cards.html">Round 6</a>
+      <a href="./test-cards-round7.html" class="current">Round 7</a>
     </nav>
-    <p class="eyebrow">Žižkov Transit Fog · Field Test — Round 6</p>
-    <h1>Today's route: Chmelnice → Nákladové nádraží Žižkov → Hlavní nádraží</h1>
+    <p class="eyebrow">Žižkov Transit Fog · Field Test — Round 7</p>
+    <h1>Short-hop loop: Chmelnice ⇄ Spojovací</h1>
     <div class="progress-row">
       <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
       <span class="progress-count" id="count">0 / 5</span>
@@ -315,34 +313,31 @@
   </header>
 
   <p class="intro">
-    Riding the same corridor as before, but backwards and starting from Chmelnice — which opens up two
-    genuine real-line divergence points along the way instead of needing a virtual reboard trick for
-    both. <strong>Card 1</strong>: line 31 also serves Chmelnice but splits off after Ohrada (Krejcárek,
-    not Biskupcova) — so this time boarding wrong from the very start actually works. <strong>Card 2</strong>:
-    line 11 splits off right after Nákladové nádraží Žižkov (Mezi Hřbitovy, not Olšanská) — a virtual
-    reboard there, same trick as last round. Both are priority — they re-confirm the deviation-detection
-    rewrite and the new "different line" button from last round, on two different divergence shapes.
-    Cards 3–4 are quick regression checks, Card 5 is a free bonus. Every line is tagged
+    Unlike Rounds 5–6, this stretch has <strong>no real divergence at all</strong> — Chmelnice, Kněžská
+    luka, and Spojovací are shared by every one of lines 5/9/11/31/98 with identical geometry the whole
+    way. So this round isn't about the deviation prompt — it's about crediting logic that's never been
+    isolated yet: does riding two different lines over the exact same street credit both independently, and
+    does riding the same line backwards avoid double-counting? It's a 2-stop hop each way, so the whole loop
+    is short enough to repeat a few times while waiting for trams. Every line is tagged
     <b class="lead" style="color:var(--teal)">🚋 real</b> (something you physically do) or
     <b class="lead" style="color:var(--accent-ink)">📱 app</b> (something you tap/select on screen).
   </p>
 
   <div class="itinerary">
     <div class="itinerary-head">
-      <p class="itinerary-title">Your route, with tests woven in</p>
+      <p class="itinerary-title">Your loop, with tests woven in</p>
       <p class="itinerary-sub">order matters, times don't</p>
     </div>
     <ol class="tl">
-      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">start</span><span class="what real"><span class="lead">🚋 Board:</span> tram 9 at Chmelnice, toward Hlavní nádraží.</span></li>
-      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">then</span><span class="what appstep"><span class="lead">📱 Select:</span> tram <b>31</b> in the app instead — deliberately wrong, right from the start.<span class="tag">CARD 1</span></span></li>
-      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">Strážní → Vozovna Žižkov → Ohrada</span><span class="what real"><span class="lead">🚋 Keep riding:</span> the real tram 9 normally — tram 31 shares this whole stretch, nothing looks wrong yet.</span></li>
-      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">past Ohrada</span><span class="what appstep"><span class="lead">📱 Prompt:</span> tram 31 expects Krejcárek, real tram continues to Biskupcova — tap "I'm actually on a different line", pick 9.<span class="tag">CARD 1</span></span></li>
-      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">during</span><span class="what real"><span class="lead">👀 Watch:</span> the blue position dot and camera the whole outing.<span class="tag">CARD 3</span></span></li>
-      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">at Nákladové nádraží Žižkov</span><span class="what appstep"><span class="lead">📱 Get Off:</span> tap it, pick that stop — WITHOUT actually leaving the tram.<span class="tag">CARD 2</span></span></li>
-      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">immediately</span><span class="what appstep"><span class="lead">📱 Get On:</span> same stop, select tram <b>11</b> instead — deliberately wrong.</span></li>
-      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">stay on tram 9</span><span class="what real"><span class="lead">🚋 Keep riding:</span> the real tram continues toward Olšanská — don't touch the app.</span></li>
-      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">right after Nákladové</span><span class="what appstep"><span class="lead">📱 Prompt:</span> tram 11 expects Mezi Hřbitovy, real tram goes to Olšanská — tap "I'm actually on a different line", pick 9.<span class="tag">CARD 2</span></span></li>
-      <li><div class="rail"><div class="dot"></div></div><span class="time">whenever convenient</span><span class="what real"><span class="lead">👀 Watch:</span> status messages (card 4); and whether the already-ridden stretch from the last outing lights up as already-explored rather than new (card 5, bonus).</span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">leg 1</span><span class="what real"><span class="lead">🚋 Board:</span> any tram 9 at Chmelnice toward Spojovací.</span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">app</span><span class="what appstep"><span class="lead">📱 Select:</span> line 9 — correctly, no trick this time.</span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">at Spojovací</span><span class="what appstep"><span class="lead">📱 Get Off:</span> Spojovací.<span class="tag">CARD 1</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">leg 2</span><span class="what real"><span class="lead">🚋 Board:</span> any tram 9 back toward Chmelnice — SAME line, reverse direction.</span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">at Chmelnice</span><span class="what appstep"><span class="lead">📱 Get Off:</span> Chmelnice — check the map, both legs should show as ONE explored stretch, not double.<span class="tag">CARD 1</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">leg 3</span><span class="what real"><span class="lead">🚋 Board:</span> tram 11 (a DIFFERENT line) at Chmelnice toward Spojovací.</span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">at Spojovací</span><span class="what appstep"><span class="lead">📱 Get Off:</span> Spojovací — check line 11's own segments now light up too, alongside 9's, not merged into one.<span class="tag">CARD 2</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">whenever convenient</span><span class="what real"><span class="lead">🚋 One more hop:</span> board anything toward Spojovací, but deliberately Get Off at Kněžská luka partway, then reboard toward Spojovací.<span class="tag">CARD 3</span></span></li>
+      <li><div class="rail"><div class="dot"></div></div><span class="time">throughout</span><span class="what real"><span class="lead">👀 Watch:</span> the line picker order at both stops (card 4), and confirm no deviation prompt ever fires on this loop (card 5).</span></li>
     </ol>
   </div>
 
@@ -352,34 +347,32 @@
       <div class="card-head">
         <div class="card-head-text">
           <span class="card-num">Priority</span>
-          <h2 class="card-title">Board wrong from the start — divergence after Ohrada</h2>
+          <h2 class="card-title">Same line, there and back — credits once, not twice</h2>
           <p class="card-covers">
-            Covers the deviation-detection rewrite on a WIDE divergence: tram 31 shares Chmelnice → Strážní
-            → Vozovna Žižkov → Ohrada with your real tram 9, then splits to Krejcárek while 9 continues to
-            Biskupcova. No virtual reboard trick needed — 31 is a real, plausible-looking wrong choice
-            right from boarding.
+            Checklist #16, never isolated before. Chmelnice ↔ Kněžská luka ↔ Spojovací is bidirectional for
+            every line here, so riding line 9 out and then line 9 back should light up the same two segments
+            once each — not four separate credits.
           </p>
         </div>
-        <div class="stops-badge"><span class="stops-num">3+</span><span class="stops-label">stops</span></div>
+        <div class="stops-badge"><span class="stops-num">2×2</span><span class="stops-label">stops</span></div>
       </div>
       <dl class="facts">
-        <div class="fact real"><dt>🚋 Board</dt><dd>Tram 9 at Chmelnice, toward Hlavní nádraží</dd></div>
-        <div class="fact app"><dt>📱 In the app</dt><dd>Select tram 31 instead — deliberately wrong, right away</dd></div>
-        <div class="fact real"><dt>🚋 Keep riding</dt><dd>Strážní → Vozovna Žižkov → Ohrada, normally</dd></div>
-        <div class="fact app"><dt>📱 When prompted</dt><dd>Tap "I'm actually on a different line", then pick line 9</dd></div>
+        <div class="fact real"><dt>🚋 Leg 1</dt><dd>Tram 9, Chmelnice → Spojovací</dd></div>
+        <div class="fact app"><dt>📱 In the app</dt><dd>Select 9, ride correctly, Get Off at Spojovací</dd></div>
+        <div class="fact real"><dt>🚋 Leg 2</dt><dd>Tram 9, Spojovací → Chmelnice — same line, reverse direction</dd></div>
+        <div class="fact app"><dt>📱 In the app</dt><dd>Select 9 again, Get Off at Chmelnice</dd></div>
       </dl>
       <div class="perf"></div>
       <ol class="steps">
-        <li><span class="step-text">Board your real tram 9 at Chmelnice as usual, but in the app select tram <b>31</b> instead — deliberately wrong. It's a real line at this stop too, so nothing looks off yet.</span></li>
-        <li><span class="step-text">Keep riding normally through Strážní, Vozovna Žižkov, and Ohrada — tram 31 shares this exact stretch with 9, so no prompt should appear yet.</span></li>
-        <li><span class="step-text">Past Ohrada, your real tram continues toward Biskupcova, but tram 31 (what you selected) expects Krejcárek instead — that's the divergence. The prompt should fire within roughly 15-30 seconds of that split.</span></li>
-        <li><span class="step-text">Tap <b>"I'm actually on a different line"</b> — check the follow-up list includes 9 (likely alongside 5/11/98, since they all still match the real path this far), and that tram 31 itself never appears in it.</span></li>
-        <li><span class="step-text">Pick line 9 from that list, then keep riding at least one more stop without touching the app — check a NEW segment lights up, proving tracking resumed rather than a one-time credit.</span></li>
+        <li><span class="step-text">Board tram 9 at Chmelnice toward Spojovací, select it correctly in the app. Check both segments (Chmelnice→Kněžská luka, Kněžská luka→Spojovací) light up as newly explored.</span></li>
+        <li><span class="step-text">Get Off at Spojovací, note the stats (km explored / lines started).</span></li>
+        <li><span class="step-text">Board tram 9 back toward Chmelnice — the same line, opposite direction over the same physical track. Select it in the app.</span></li>
+        <li><span class="step-text">Watch the status messages on this return leg: both stops should say "(already explored)", not "New segment explored!"</span></li>
+        <li><span class="step-text">Get Off at Chmelnice, compare stats to step 2 — km explored and segment count should be unchanged, since nothing new was credited.</span></li>
       </ol>
       <div class="confirm">
-        <b>Confirm:</b> the prompt fired within ~15-30s of passing Ohrada (not late, not silent), the list
-        included more than one real candidate, tram 31 wasn't among them, and tracking visibly continued
-        afterward without the ride ending.
+        <b>Confirm:</b> the return leg's stops are tagged already-explored, and total km/segments explored
+        doesn't increase between the two Get Offs.
       </div>
       <div class="check-row">
         <label class="check-toggle"><input type="checkbox" data-card="1"> Done</label>
@@ -391,31 +384,29 @@
       <div class="card-head">
         <div class="card-head-text">
           <span class="card-num">Priority</span>
-          <h2 class="card-title">Virtual reboard — quick divergence after Nákladové nádraží Žižkov</h2>
+          <h2 class="card-title">Different line, same street — credits independently</h2>
           <p class="card-covers">
-            Covers the same rewrite on a TIGHT divergence, right after where Card 1 already switched you
-            back: tram 11 splits off to Mezi Hřbitovy immediately after Nákladové nádraží Žižkov, while 9
-            continues to Olšanská — a good test that the ~15s grace period reacts promptly even with no
-            shared stretch to speak of.
+            Checklist #17, never isolated before. Line 11 runs the exact same physical track as line 9 here,
+            but has its own segment IDs — riding it should light up 11's own segments separately, not get
+            treated as "already explored" just because 9 covered the same street.
           </p>
         </div>
-        <div class="stops-badge"><span class="stops-num">1</span><span class="stops-label">stop</span></div>
+        <div class="stops-badge"><span class="stops-num">2</span><span class="stops-label">stops</span></div>
       </div>
       <dl class="facts">
-        <div class="fact real"><dt>🚋 Stay on</dt><dd>Same tram 9 — never actually get off</dd></div>
-        <div class="fact app"><dt>📱 At Nákladové nádraží Žižkov</dt><dd>Tap Get Off, pick that stop (virtual alighting only)</dd></div>
-        <div class="fact app"><dt>📱 Immediately after</dt><dd>Tap Get On, same stop, select tram 11 — deliberately wrong</dd></div>
-        <div class="fact app"><dt>📱 When prompted</dt><dd>Tap "I'm actually on a different line", then pick line 9</dd></div>
+        <div class="fact real"><dt>🚋 Board</dt><dd>Tram 11 at Chmelnice toward Spojovací</dd></div>
+        <div class="fact app"><dt>📱 In the app</dt><dd>Select 11, ride correctly, Get Off at Spojovací</dd></div>
       </dl>
       <div class="perf"></div>
       <ol class="steps">
-        <li><span class="step-text">By the time you reach Nákladové nádraží Žižkov you should already be back on tram 9 correctly (from Card 1). WITHOUT actually leaving the tram, tap Get Off in the app and pick this stop as if you'd alighted.</span></li>
-        <li><span class="step-text">Immediately tap Get On again, same stop, but select tram <b>11</b> instead — deliberately wrong.</span></li>
-        <li><span class="step-text">Keep riding the real tram 9 — don't touch the app. Tram 11 expects Mezi Hřbitovy next, but your real tram goes to Olšanská instead — the divergence happens almost immediately here, unlike Card 1's longer shared stretch.</span></li>
-        <li><span class="step-text">When the prompt appears, tap "I'm actually on a different line" — check the list this time is TIGHTER, likely just 9 (and maybe 5), since 11/98 both went the Mezi Hřbitovy way and no longer match your real path at all.</span></li>
-        <li><span class="step-text">Pick line 9, keep riding, confirm tracking resumes.</span></li>
+        <li><span class="step-text">After Card 1's round trip, board tram 11 at Chmelnice toward Spojovací — a different line over the identical street.</span></li>
+        <li><span class="step-text">Select 11 correctly in the app. Watch the status messages: both stops should say "New segment explored!" this time, even though you already rode this exact street on line 9.</span></li>
+        <li><span class="step-text">Get Off at Spojovací. Check the stats: "lines started" should now include both 9 and 11, and km explored should have gone up again (11's segments are new, distinct from 9's).</span></li>
       </ol>
-      <div class="confirm"><b>Confirm:</b> the prompt still fires promptly on this much shorter divergence, the candidate list is appropriately narrower than Card 1's, and switching still resumes tracking correctly.</div>
+      <div class="confirm">
+        <b>Confirm:</b> line 11's segments credit as genuinely new despite sharing the street with line 9;
+        both lines show as started in the stats.
+      </div>
       <div class="check-row">
         <label class="check-toggle"><input type="checkbox" data-card="2"> Done</label>
         <input type="text" class="note-input" data-card="2" placeholder="Any issue? (optional)">
@@ -426,21 +417,23 @@
       <div class="card-head">
         <div class="card-head-text">
           <span class="card-num">Check</span>
-          <h2 class="card-title">Position dot always visible, no duplicate, camera behaves</h2>
+          <h2 class="card-title">Mid-route reboard at Kněžská luka</h2>
           <p class="card-covers">
-            Re-check from last round: the dot updates continuously even before boarding, no duplicate dot
-            from the Locate button, and manual panning isn't overridden by auto-follow.
+            Isolates progressive per-segment crediting (#9/#14) on the simplest possible route — only two
+            segments total, so it's easy to know exactly what should and shouldn't have credited at each
+            step.
           </p>
         </div>
-        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">whole outing</span></div>
+        <div class="stops-badge"><span class="stops-num">1+1</span><span class="stops-label">segments</span></div>
       </div>
       <div class="perf"></div>
       <ol class="steps">
-        <li><span class="step-text">Before boarding, just open the app and watch: the blue dot should already be there and moving as you walk, without tapping Locate or Get On.</span></li>
-        <li><span class="step-text">Tap the Locate button once before boarding, then board and start the ride — check there's only ONE dot the whole time, not two.</span></li>
-        <li><span class="step-text">Mid-ride, manually drag/pan the map to look around — check the camera stays where you left it instead of snapping back on the next fix. Tap Locate to recenter — check it resumes following from there.</span></li>
+        <li><span class="step-text">Board any line at Chmelnice toward Spojovací, select it correctly.</span></li>
+        <li><span class="step-text">Get Off at Kněžská luka — the intermediate stop, not the terminus. Confirm only the Chmelnice→Kněžská luka segment credited (map + stats), and the ride ended cleanly with a normal summary.</span></li>
+        <li><span class="step-text">Get On again at Kněžská luka, same line, toward Spojovací. Confirm this starts as a fresh, single-direction ride (only one plausible onward stop from here).</span></li>
+        <li><span class="step-text">Get Off at Spojovací. Confirm the second segment (Kněžská luka→Spojovací) now also shows explored, and the map reflects both as one continuous colored stretch.</span></li>
       </ol>
-      <div class="confirm"><b>Confirm:</b> one dot, always live; manual panning is respected until you tap Locate again; no label flicker.</div>
+      <div class="confirm"><b>Confirm:</b> each segment credits exactly once, at the right moment, matching what you'd expect by eye from a 2-segment route.</div>
       <div class="check-row">
         <label class="check-toggle"><input type="checkbox" data-card="3"> Done</label>
         <input type="text" class="note-input" data-card="3" placeholder="Any issue? (optional)">
@@ -451,17 +444,17 @@
       <div class="card-head">
         <div class="card-head-text">
           <span class="card-num">Check</span>
-          <h2 class="card-title">Status line stays readable, says whether a segment was new</h2>
-          <p class="card-covers">Re-check from last round: messages stay up long enough, and now say whether a credited stop was newly explored or already-explored.</p>
+          <h2 class="card-title">Line picker sorts numerically at both stops</h2>
+          <p class="card-covers">Checklist #3, never visually confirmed. Chmelnice and Spojovací both serve 5, 9, 11, 31, 98 — a good check that the picker sorts as numbers (9 before 11 before 31), not as text (11 before 31 before 5 before 9).</p>
         </div>
-        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">any ride</span></div>
+        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">any Get On</span></div>
       </div>
       <div class="perf"></div>
       <ol class="steps">
-        <li><span class="step-text">During any ride, watch for the status message each time a stop credits or a fix gets skipped.</span></li>
-        <li><span class="step-text">When a stop credits, check the message distinguishes "New segment explored!" from "(already explored)" — most of this corridor was ridden last round, so you should see plenty of the latter.</span></li>
+        <li><span class="step-text">At either Chmelnice or Spojovací, tap Get On and open the line picker without selecting anything yet.</span></li>
+        <li><span class="step-text">Check the order reads 5, 9, 11, 31, 98 (and any bus lines after/sorted appropriately) — not 11, 31, 5, 9, 98 or similar text-sort order.</span></li>
       </ol>
-      <div class="confirm"><b>Confirm:</b> messages are noticeable and stay up a few seconds before clearing; new-vs-already-explored wording shows up correctly.</div>
+      <div class="confirm"><b>Confirm:</b> line order is correct numerically at both stops.</div>
       <div class="check-row">
         <label class="check-toggle"><input type="checkbox" data-card="4"> Done</label>
         <input type="text" class="note-input" data-card="4" placeholder="Any issue? (optional)">
@@ -472,21 +465,21 @@
       <div class="card-head">
         <div class="card-head-text">
           <span class="card-num">Check (free)</span>
-          <h2 class="card-title">Riding the same corridor backwards doesn't double-count</h2>
+          <h2 class="card-title">Zero false deviation prompts on fully shared track</h2>
           <p class="card-covers">
-            Covers: this whole route retraces last round's Hlavní nádraží → Spojovací corridor in reverse.
-            Genuinely shared (bidirectional) segments should already show explored from last time; only a
-            truly divided one-way stretch, if one exists here, should light up as newly explored now.
+            Since every line here has identical geometry the whole way, this loop is a clean confidence
+            check that the new deterministic deviation detector stays silent through ordinary riding —
+            including any traffic stops or dwell time — when nothing is actually wrong.
           </p>
         </div>
-        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">whole outing</span></div>
+        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">whole loop</span></div>
       </div>
       <div class="perf"></div>
       <ol class="steps">
-        <li><span class="step-text">No special action needed — just glance at the map as you retrace the route. Most of it should already be colored in from last round's ride, not grey.</span></li>
-        <li><span class="step-text">Note if anything unexpectedly re-lights as "new" — that could mean the app isn't correctly sharing credit across both directions of the same physical segment.</span></li>
+        <li><span class="step-text">Across all the legs above, ride normally — don't deliberately pick a wrong line this round.</span></li>
+        <li><span class="step-text">Note any point where a deviation prompt fires unexpectedly, especially during a stop, red light, or slow crawl in traffic.</span></li>
       </ol>
-      <div class="confirm"><b>Confirm:</b> the already-ridden stretch stays lit; nothing you've already explored gets flagged as newly explored again unless it's a genuinely separate one-way segment.</div>
+      <div class="confirm"><b>Confirm:</b> no deviation prompt appears anywhere on this loop when you've selected the correct line each time.</div>
       <div class="check-row">
         <label class="check-toggle"><input type="checkbox" data-card="5"> Done</label>
         <input type="text" class="note-input" data-card="5" placeholder="Any issue? (optional)">
@@ -503,7 +496,7 @@
 </div>
 
 <script>
-  const STORAGE_KEY = 'zizkov-field-test-progress-v5'; // bumped for Round 6 - fresh route/cards, Round 5 treated as finished (archived at test-cards-round5.html)
+  const STORAGE_KEY = 'zizkov-field-test-progress-round7-v1'; // separate key from Round 6's v5 - independent progress tracking
   const boxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
   const noteInputs = Array.from(document.querySelectorAll('.note-input'));
   const fill = document.getElementById('fill');
@@ -516,9 +509,6 @@
   function save(state) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
-  // Earlier versions stored `state[key]` as a plain boolean (done only, no
-  // note) - normalize on read so old saved progress isn't lost when this
-  // page is reopened after the notes feature was added.
   function entryFor(state, key) {
     const raw = state[key];
     if (raw && typeof raw === 'object') return raw;
@@ -584,7 +574,7 @@
     const a = document.createElement('a');
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     a.href = url;
-    a.download = `zizkov-field-test-results-${stamp}.json`;
+    a.download = `zizkov-field-test-results-round7-${stamp}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
