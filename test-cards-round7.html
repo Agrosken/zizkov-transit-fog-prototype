@@ -401,11 +401,13 @@
       <ol class="steps">
         <li><span class="step-text">After Card 1's round trip, board tram 11 at Chmelnice toward Spojovací — a different line over the identical street.</span></li>
         <li><span class="step-text">Select 11 correctly in the app. Watch the status messages: both stops should say "New segment explored!" this time, even though you already rode this exact street on line 9.</span></li>
-        <li><span class="step-text">Get Off at Spojovací. Check the stats: "lines started" should now include both 9 and 11, and km explored should have gone up again (11's segments are new, distinct from 9's).</span></li>
+        <li><span class="step-text">Get Off at Spojovací — this auto-downloads an export. The map itself is a poor way to tell 9 and 11 apart here since both stretches sit almost on top of each other; instead open the downloaded JSON and check <code>perLineSummary</code>: you should see one entry with <code>routeShortName: "9"</code> and one with <code>"11"</code>, each with its own <code>exploredSegments</code> &gt; 0 and its own <code>exploredLengthM</code> — computed independently, never merged between lines.</span></li>
       </ol>
       <div class="confirm">
-        <b>Confirm:</b> line 11's segments credit as genuinely new despite sharing the street with line 9;
-        both lines show as started in the stats.
+        <b>Confirm:</b> the exported <code>perLineSummary</code> shows both line 9 and line 11 with their own
+        non-zero <code>exploredSegments</code> — proof they credited independently, without needing to
+        visually tell them apart on the map. (A side-by-side schematic view of explored lines, so this is
+        visible in the app itself, is a planned future UX improvement — not in scope for this round.)
       </div>
       <div class="check-row">
         <label class="check-toggle"><input type="checkbox" data-card="2"> Done</label>
