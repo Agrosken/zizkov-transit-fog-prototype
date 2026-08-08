@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <title>Žižkov Transit Fog Prototype</title>
-    <script type="module" crossorigin src="/zizkov-transit-fog-prototype/assets/index-CkUEzTCW.js"></script>
-    <link rel="stylesheet" crossorigin href="/zizkov-transit-fog-prototype/assets/index-C9wR1_sG.css">
+    <script type="module" crossorigin src="/zizkov-transit-fog-prototype/assets/index-CcyCGy6M.js"></script>
+    <link rel="stylesheet" crossorigin href="/zizkov-transit-fog-prototype/assets/index-DJxZJjmH.css">
   </head>
   <body>
     <div id="map"></div>
@@ -17,6 +17,7 @@
       </div>
       <div id="buttons">
         <button id="get-on-btn">Get On</button>
+        <button id="lines-btn">Lines</button>
         <button id="export-btn">Export</button>
         <button id="reset-btn">Reset</button>
       </div>
@@ -29,6 +30,16 @@
         <input id="picker-filter" type="text" placeholder="Filter..." />
         <div id="picker-list"></div>
         <button id="picker-cancel">Cancel</button>
+      </div>
+    </div>
+
+    <div id="lines-backdrop" class="hidden">
+      <div id="lines-panel">
+        <div id="lines-head">
+          <div id="lines-title">Line progress</div>
+          <button id="lines-close" aria-label="Close">Done</button>
+        </div>
+        <div id="lines-body"></div>
       </div>
     </div>
 
