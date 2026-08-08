@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Test Cards — Žižkov Transit Fog</title>
+<style>
+  :root {
+    --bg: #eef2f0;
+    --paper: #ffffff;
+    --ink: #16211c;
+    --ink-soft: #46564e;
+    --line: #ccd6d1;
+    --accent: #c97f1f;
+    --accent-ink: #5a3a0f;
+    --teal: #2f5d56;
+    --teal-soft: #dce9e5;
+    --warn: #a83e2c;
+    --warn-soft: #f6e3de;
+    --done: #3f7a5c;
+    --done-soft: #dcefe3;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10160f;
+      --paper: #182018;
+      --ink: #e9efec;
+      --ink-soft: #a9b8b0;
+      --line: #34423b;
+      --accent: #e0a13c;
+      --accent-ink: #ffe4b3;
+      --teal: #7fb3a8;
+      --teal-soft: #1e2e2a;
+      --warn: #e2725c;
+      --warn-soft: #3a201b;
+      --done: #6fcb97;
+      --done-soft: #17281f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --paper: #182018; --ink: #e9efec; --ink-soft: #a9b8b0;
+    --line: #34423b; --accent: #e0a13c; --accent-ink: #ffe4b3; --teal: #7fb3a8;
+    --teal-soft: #1e2e2a; --warn: #e2725c; --warn-soft: #3a201b; --done: #6fcb97; --done-soft: #17281f;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef2f0; --paper: #ffffff; --ink: #16211c; --ink-soft: #46564e;
+    --line: #ccd6d1; --accent: #c97f1f; --accent-ink: #5a3a0f; --teal: #2f5d56;
+    --teal-soft: #dce9e5; --warn: #a83e2c; --warn-soft: #f6e3de; --done: #3f7a5c; --done-soft: #dcefe3;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 0 4rem; }
+
+  header.top {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg);
+    padding: 1.1rem 1.1rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .round-nav {
+    display: flex; gap: 0.5rem; margin-bottom: 0.5rem;
+  }
+  .round-nav a {
+    font-size: 0.74rem; font-weight: 700; text-decoration: none;
+    color: var(--ink-soft); background: var(--teal-soft);
+    padding: 0.22rem 0.55rem; border-radius: 99px;
+  }
+  .round-nav a.current { color: var(--accent-ink); background: var(--paper); border: 1px solid var(--accent); }
+  .eyebrow {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;
+    color: var(--teal); margin: 0 0 0.3rem;
+  }
+  h1 {
+    font-size: 1.35rem; line-height: 1.2; margin: 0 0 0.7rem; text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .progress-row { display: flex; align-items: center; gap: 0.6rem; }
+  .progress-track {
+    flex: 1; height: 7px; border-radius: 99px; background: var(--line); overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); border-radius: 99px; width: 0%;
+    transition: width 0.35s ease;
+  }
+  .progress-count {
+    font-variant-numeric: tabular-nums; font-size: 0.82rem; color: var(--ink-soft);
+    white-space: nowrap; min-width: 3.4em; text-align: right;
+  }
+  .export-btn {
+    margin-top: 0.7rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font: inherit; font-size: 0.8rem; font-weight: 700;
+    color: var(--accent-ink); background: var(--teal-soft);
+    border: 1px solid transparent; border-radius: 7px;
+    cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); }
+  .export-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .intro {
+    margin: 0.9rem 1.1rem 0.4rem; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.5;
+  }
+  .intro strong { color: var(--ink); }
+
+  main { padding: 0.6rem 1.1rem 0; display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card.card-done { opacity: 0.72; }
+
+  .card-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem;
+    padding: 0.95rem 1rem 0.85rem;
+  }
+  .card-head-text { min-width: 0; }
+  .card-num {
+    font-variant-numeric: tabular-nums; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; color: var(--accent-ink); background: var(--teal-soft);
+    display: inline-block; padding: 0.1rem 0.45rem; border-radius: 5px; margin-bottom: 0.4rem;
+  }
+  .card-title { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.15rem; text-wrap: balance; }
+  .card-covers { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
+
+  .stops-badge {
+    flex-shrink: 0; text-align: center; background: var(--teal-soft); border-radius: 8px;
+    padding: 0.4rem 0.6rem; min-width: 4.4em;
+  }
+  .stops-num {
+    font-variant-numeric: tabular-nums; font-size: 1.3rem; font-weight: 800; color: var(--teal); line-height: 1;
+    display: block;
+  }
+  .stops-label {
+    font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft);
+    display: block; margin-top: 0.15rem;
+  }
+
+  .perf {
+    height: 1px; margin: 0 1rem;
+    background-image: repeating-linear-gradient(to right, var(--line) 0 6px, transparent 6px 12px);
+  }
+
+  .steps { list-style: none; margin: 0; padding: 0.85rem 1rem 0.3rem; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    display: flex; gap: 0.6rem; align-items: baseline;
+    font-size: 0.9rem; line-height: 1.45; padding: 0.3rem 0;
+  }
+  .steps li::before {
+    content: counter(step);
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 0.76rem;
+    color: var(--teal); background: var(--teal-soft);
+    width: 1.35em; height: 1.35em; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transform: translateY(0.15em);
+  }
+  .steps .step-text { flex: 1 1 auto; min-width: 0; }
+
+  .confirm {
+    margin: 0.3rem 1rem 1rem; padding: 0.7rem 0.8rem;
+    background: var(--done-soft); border-radius: 8px; font-size: 0.85rem; line-height: 1.5;
+  }
+  .confirm b { color: var(--done); }
+
+  .note {
+    margin: 0 1rem 1rem; padding: 0.65rem 0.8rem;
+    background: var(--warn-soft); border-radius: 8px; font-size: 0.82rem; line-height: 1.5;
+    color: var(--ink);
+  }
+  .note b { color: var(--warn); }
+
+  .check-row {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    margin: 0.2rem 1rem 1rem;
+    padding: 0.7rem 0.85rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .check-toggle {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; user-select: none; white-space: nowrap; flex-shrink: 0;
+  }
+  .check-toggle input {
+    width: 1.15rem; height: 1.15rem; accent-color: var(--done); flex-shrink: 0;
+  }
+  .check-toggle:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .card-done .check-row { background: var(--done-soft); border-color: var(--done); }
+  .note-input {
+    flex: 1 1 12em; min-width: 0;
+    padding: 0.45rem 0.6rem;
+    font: inherit; font-size: 0.85rem;
+    color: var(--ink); background: var(--paper);
+    border: 1px solid var(--line); border-radius: 6px;
+  }
+  .note-input::placeholder { color: var(--ink-soft); }
+  .note-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  footer {
+    margin: 1.4rem 1.1rem 0; padding-top: 1rem; border-top: 1px solid var(--line);
+    font-size: 0.78rem; color: var(--ink-soft); line-height: 1.6;
+  }
+  footer code {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.85em;
+    background: var(--teal-soft); padding: 0.05em 0.35em; border-radius: 4px;
+  }
+
+  .itinerary {
+    margin: 0.2rem 1.1rem 1.3rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem 0.95rem;
+  }
+  .itinerary-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem;
+    margin-bottom: 0.7rem;
+  }
+  .itinerary-title { font-size: 0.95rem; font-weight: 700; margin: 0; }
+  .itinerary-sub { font-size: 0.74rem; color: var(--ink-soft); }
+  .tl { list-style: none; margin: 0; padding: 0; }
+  .tl li {
+    position: relative; display: flex; gap: 0.7rem; padding: 0 0 0.85rem 0;
+  }
+  .tl li:last-child { padding-bottom: 0; }
+  .tl .rail {
+    flex-shrink: 0; width: 0.55rem; display: flex; flex-direction: column; align-items: center;
+  }
+  .tl .dot {
+    width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--teal); margin-top: 0.3rem;
+  }
+  .tl li.milestone .dot { background: var(--accent); width: 0.7rem; height: 0.7rem; margin-top: 0.22rem; }
+  .tl .wire { flex: 1; width: 2px; background: var(--line); margin-top: 0.15rem; }
+  .tl li:last-child .wire { display: none; }
+  .tl .time {
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 0.82rem;
+    color: var(--teal); min-width: 3.4em; flex-shrink: 0;
+  }
+  .tl li.milestone .time { color: var(--accent-ink); }
+  .tl .what {
+    font-size: 0.85rem; line-height: 1.4;
+    flex: 1 1 auto; min-width: 0;
+  }
+  .tl .what b { font-weight: 700; }
+  .tl .tag {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em; color: var(--accent-ink);
+    background: var(--teal-soft); border-radius: 4px; padding: 0.02rem 0.35rem; margin-left: 0.3rem;
+    white-space: nowrap; display: inline-block;
+  }
+  .tl .what.real b, .tl .what.real .lead { color: var(--teal); }
+  .tl .what.appstep b, .tl .what.appstep .lead { color: var(--accent-ink); }
+  .lead { font-weight: 700; }
+
+  .leg-head {
+    margin: 0 1.1rem 0.5rem; display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem;
+  }
+  .leg-head h2 { font-size: 1.05rem; margin: 0; min-width: 0; }
+  .leg-head span { font-size: 0.78rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  .facts {
+    margin: 0 1rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .fact {
+    display: flex; align-items: baseline; gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.86rem;
+  }
+  .fact:last-child { border-bottom: none; }
+  .fact dt {
+    flex: 0 0 8.2em; min-width: 0;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .fact dd { margin: 0; flex: 1 1 auto; min-width: 0; font-weight: 700; }
+  .fact.real { background: color-mix(in srgb, var(--teal) 7%, var(--paper)); }
+  .fact.real dt { color: var(--teal); }
+  .fact.app { background: color-mix(in srgb, var(--accent) 9%, var(--paper)); }
+  .fact.app dt { color: var(--accent-ink); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <nav class="round-nav">
+      <a href="./test-cards.html">Round 6</a>
+      <a href="./test-cards-round7.html">Round 7</a>
+      <a class="current" href="./test-cards-round8.html">Round 8 · metro</a>
+      <a href="./test-cards-round9.html">Round 9 · trams</a>
+    </nav>
+    <p class="eyebrow">Žižkov Transit Fog · Field Test — Round 8</p>
+    <h1>Metro circuit: Želivského → Muzeum → Florenc → Můstek</h1>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+      <span class="progress-count" id="count">0 / 5</span>
+    </div>
+    <button type="button" id="export-results-btn" class="export-btn">⬇ Export test results</button>
+  </header>
+
+  <p class="intro">
+    First metro round — nothing underground has ever been tested. Metro detection zones are built completely
+    differently from surface stops, because GPS does not work down there at all: a <strong>150m circle</strong>
+    around the platform, unioned with <strong>one circle per cluster of station entrances</strong>. Those numbers
+    are a proposal, and this outing is what decides them. Seven stations split into <strong>two entrance
+    clusters</strong> — Můstek, Florenc, Anděl, Karlovo náměstí, Národní třída, Náměstí Republiky and Kobylisy —
+    the rest get one. The circuit uses all three lines and all three interchanges in scope. Every line is tagged
+    <b class="lead" style="color:var(--teal)">🚇 real</b> (something you physically do) or
+    <b class="lead" style="color:var(--accent-ink)">📱 app</b> (something you tap).
+  </p>
+
+  <div class="itinerary">
+    <div class="itinerary-head">
+      <p class="itinerary-title">The circuit</p>
+      <p class="itinerary-sub">one continuous outing</p>
+    </div>
+    <ol class="tl">
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">start</span><span class="what real"><span class="lead">🚇 Enter</span> Želivského, ride metro <b>A</b> toward the centre.<span class="tag">CARD 1</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">Muzeum</span><span class="what real"><span class="lead">🚇 Change</span> to metro <b>C</b> toward Florenc.<span class="tag">CARD 4</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">Florenc</span><span class="what real"><span class="lead">🚇 Change</span> to metro <b>B</b> toward Můstek.<span class="tag">CARD 2</span></span></li>
+      <li class="milestone"><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">Můstek</span><span class="what real"><span class="lead">🚇 Surface</span> via an exit at the <b>far end</b> from where you came in — Můstek's entrances form two separate groups.<span class="tag">CARD 2</span></span></li>
+      <li><div class="rail"><div class="dot"></div><div class="wire"></div></div><span class="time">then</span><span class="what real"><span class="lead">🚇 Return</span> back down and ride metro <b>A</b> the other way, retracing toward Želivského.<span class="tag">CARD 3</span></span></li>
+      <li><div class="rail"><div class="dot"></div></div><span class="time">throughout</span><span class="what appstep"><span class="lead">👀 Watch</span> where the position dot reappears each time you surface.<span class="tag">CARD 5</span></span></li>
+    </ol>
+  </div>
+
+  <main>
+
+    <section class="card" id="card-1">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Priority</span>
+          <h2 class="card-title">Does a metro stop credit at all with no GPS?</h2>
+          <p class="card-covers">
+            No metro ride has ever been recorded, so this whole mode is untested. Ride metro A from Želivského to
+            Muzeum (Jiřího z Poděbrad and Náměstí Míru in between). Underground there is no signal, so crediting
+            depends entirely on a fix landing in a station's zone as you go down or come up.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">3</span><span class="stops-label">stops</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">At Želivského, tap <b>Get On</b> before going down, while you still have sky. Pick Želivského and metro <b>A</b>.</span></li>
+        <li><span class="step-text">Ride to Muzeum. Do not touch the app underground — just note whether the status line says anything at all when you arrive.</span></li>
+        <li><span class="step-text">At Muzeum, before changing lines, check the map: did any of Jiřího z Poděbrad, Náměstí Míru or Muzeum turn from grey to the line-A green?</span></li>
+        <li><span class="step-text">If nothing credited, tap <b>Export</b> right there — the fix log will show whether GPS produced anything at all down there, which is the part I cannot guess.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> how many of the three segments credited, and whether the app stayed usable (no crash, no stuck "Getting your location") with GPS absent for minutes at a time.</div>
+      <div class="check-row"><label class="check-toggle"><input type="checkbox" data-card="1"> Done</label><input type="text" class="note-input" data-card="1" placeholder="How many credited? (optional)"></div>
+    </section>
+
+    <section class="card" id="card-2">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Priority</span>
+          <h2 class="card-title">Two-cluster stations — enter one end, leave the other</h2>
+          <p class="card-covers">
+            This is the case you raised. Where a station's entrances are far apart it gets two separate zones
+            rather than one big one; Můstek and Florenc are both split that way. The test is whether coming up at
+            the opposite end from where you went down still registers as the same station.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">2</span><span class="stops-label">stations</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">At Florenc, note roughly which entrance you use when changing from C to B — the Křižíkova end or the Na Florenci end.</span></li>
+        <li><span class="step-text">At Můstek, surface deliberately via an exit at the <b>far end</b> from where you entered the platform: Václavské náměstí versus Na Příkopě.</span></li>
+        <li><span class="step-text">Once outside with a real fix, check whether the app still considers you at Můstek — status line, and whether the Můstek segments credited.</span></li>
+        <li><span class="step-text">If it did NOT register, note which exit you used. That tells me whether the two clusters need merging into one larger zone after all.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> whether exiting at the far end still counted as that station, at both Florenc and Můstek.</div>
+      <div class="check-row"><label class="check-toggle"><input type="checkbox" data-card="2"> Done</label><input type="text" class="note-input" data-card="2" placeholder="Which exits did you use? (optional)"></div>
+    </section>
+
+    <section class="card" id="card-3">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Priority</span>
+          <h2 class="card-title">Same tunnel both ways credits once, not twice</h2>
+          <p class="card-covers">
+            Both directions of a metro line are deliberately merged into one creditable segment — they share the
+            same tunnel, so riding back should not hand out new progress. Never exercised, because there has never
+            been a metro ride.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">return leg</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">Note the km-explored figure after you surface at Můstek.</span></li>
+        <li><span class="step-text">Ride metro A back the other way, retracing the stretch you already covered outbound.</span></li>
+        <li><span class="step-text">Check the km figure again — the retraced part should add <b>nothing</b>. Only genuinely new stretches should increase it.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> retracing the same tunnel added no distance, and the map shows no double-counting.</div>
+      <div class="check-row"><label class="check-toggle"><input type="checkbox" data-card="3"> Done</label><input type="text" class="note-input" data-card="3" placeholder="km before / after (optional)"></div>
+    </section>
+
+    <section class="card" id="card-4">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Check</span>
+          <h2 class="card-title">Changing lines at one station</h2>
+          <p class="card-covers">
+            Muzeum (A/C), Florenc (B/C) and Můstek (A/B) are all interchanges. Each change means ending one ride
+            and starting another at the same physical place — worth confirming that does not confuse the pickers or
+            credit the wrong line.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">3</span><span class="stops-label">changes</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">At each change, tap <b>Get Off</b> and pick the station, then <b>Get On</b> again and pick the new line.</span></li>
+        <li><span class="step-text">Watch the line picker: at an interchange it should offer both lines serving that station.</span></li>
+        <li><span class="step-text">Note whether the stop picker finds the station at all while you are underground — with no fresh fix it should let you type the name instead.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> each change recorded as its own ride on the correct line, and the picker was usable underground.</div>
+      <div class="check-row"><label class="check-toggle"><input type="checkbox" data-card="4"> Done</label><input type="text" class="note-input" data-card="4" placeholder="Any issue? (optional)"></div>
+    </section>
+
+    <section class="card" id="card-5">
+      <div class="card-head">
+        <div class="card-head-text">
+          <span class="card-num">Check</span>
+          <h2 class="card-title">Where does the dot reappear when you surface?</h2>
+          <p class="card-covers">
+            The 150m platform circle exists to catch a fix taken as signal returns. Whether 150m is right depends
+            on how far from the platform you actually are when the phone reacquires — which only a real ride can say.
+          </p>
+        </div>
+        <div class="stops-badge"><span class="stops-num">–</span><span class="stops-label">whole outing</span></div>
+      </div>
+      <div class="perf"></div>
+      <ol class="steps">
+        <li><span class="step-text">Each time you come up, watch how long before the blue dot reappears and roughly where it lands relative to the station.</span></li>
+        <li><span class="step-text">Note any station where the dot appeared a long way off — a block or more — since that is what would need a bigger radius.</span></li>
+        <li><span class="step-text">Note the opposite too: anywhere the zone feels far too generous, thinking you are at the station while you are clearly streets away.</span></li>
+      </ol>
+      <div class="confirm"><b>Confirm:</b> a rough sense of reacquisition distance per station. This is what sets the radius, so approximate is fine.</div>
+      <div class="check-row"><label class="check-toggle"><input type="checkbox" data-card="5"> Done</label><input type="text" class="note-input" data-card="5" placeholder="Where did the dot land? (optional)"></div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><strong>Why this round matters:</strong> metro is the only mode with zero field data, and its detection zones use numbers I proposed rather than measured. Cards 1, 2 and 5 are what turn those into real values.</p>
+    <p>Tap <strong>Export test results</strong> to save what you checked, and <strong>Export</strong> in the app itself for the ride data.</p>
+  </footer>
+</div>
+
+<script>
+  const boxes = document.querySelectorAll('input[type="checkbox"]');
+  const notes = document.querySelectorAll('.note-input');
+  const countEl = document.getElementById('count');
+  const fillEl = document.getElementById('fill');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const KEY = 'round8-metro';
+
+  function refresh() {
+    const done = Array.from(boxes).filter((b) => b.checked).length;
+    countEl.textContent = done + ' / ' + boxes.length;
+    fillEl.style.width = ((done / boxes.length) * 100) + '%';
+    cards.forEach(function (c, i) { c.classList.toggle('card-done', boxes[i].checked); });
+  }
+
+  boxes.forEach(function (b, i) {
+    b.checked = localStorage.getItem(KEY + '-' + i) === 'true';
+    b.addEventListener('change', function () { localStorage.setItem(KEY + '-' + i, b.checked); refresh(); });
+  });
+  notes.forEach(function (n, i) {
+    n.value = localStorage.getItem(KEY + '-note-' + i) || '';
+    n.addEventListener('input', function () { localStorage.setItem(KEY + '-note-' + i, n.value); });
+  });
+
+  document.getElementById('export-results-btn').addEventListener('click', function () {
+    var payload = {
+      round: 8,
+      focus: 'metro zones',
+      exportedAt: new Date().toISOString(),
+      cards: Array.from(boxes).map(function (b, i) {
+        return { card: i + 1, done: b.checked, note: notes[i].value || null };
+      }),
+    };
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+    a.download = 'zizkov-test-round8-metro-' + Date.now() + '.json';
+    a.click();
+  });
+
+  refresh();
+</script>
+</body>
+</html>
